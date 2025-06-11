@@ -8,7 +8,7 @@ tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(model_id, trust_remote_code=True)
 
 # 2. Load the Mixture-of-Thoughts dataset
-dataset = load_dataset("open-r1/Mixture-of-Thoughts", split="train")
+dataset = load_dataset("open-r1/Mixture-of-Thoughts", 'all', split="train")
 sample = dataset[0]  # First example
 
 # 3. Print raw example
