@@ -1,6 +1,6 @@
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from trl.trainer.utils import maybe_apply_chat_template
+from trl.trl.data_utils import maybe_apply_chat_template
 
 # 1. Load tokenizer and model
 model_id = "Qwen/Qwen2.5-7B"
