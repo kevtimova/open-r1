@@ -16,6 +16,6 @@ print("=== RAW EXAMPLE ===")
 print(sample)
 
 # 4. Apply chat template
-processed = maybe_apply_chat_template(sample, processing_class="auto")
+processed = maybe_apply_chat_template(sample, tokenizer, chat_template="qwen2.5", add_generation_prompt=True)
 print("\n=== PROMPT AFTER CHAT TEMPLATE ===")
 print(processed["prompt"])
