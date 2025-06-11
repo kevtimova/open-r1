@@ -13,6 +13,7 @@ dataset_prompt_column: messages
 # GRPO trainer config
 bf16: true
 use_vllm: true
+vllm_gpu_memory_utilization: 0.8
 do_eval: false
 gradient_accumulation_steps: 4
 gradient_checkpointing: true
