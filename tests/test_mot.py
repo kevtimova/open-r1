@@ -18,4 +18,4 @@ print(sample)
 # 4. Apply chat template
 processed = apply_chat_template(sample, tokenizer)
 print("\n=== PROMPT AFTER CHAT TEMPLATE ===")
-print(processed["prompt"])
+print(processed)
