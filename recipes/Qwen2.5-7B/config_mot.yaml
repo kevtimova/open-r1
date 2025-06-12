@@ -36,8 +36,8 @@ num_generations: 16
 num_train_epochs: 1
 output_dir: data/Qwen2.5-7B-GRPO-MoT
 overwrite_output_dir: true
-per_device_eval_batch_size: 4
-per_device_train_batch_size: 4
+per_device_eval_batch_size: 2
+per_device_train_batch_size: 2
 push_to_hub: false
 report_to:
 - wandb
