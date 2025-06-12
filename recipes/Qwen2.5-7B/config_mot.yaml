@@ -32,7 +32,7 @@ lr_scheduler_type: cosine
 max_prompt_length: 10000
 max_completion_length: 20000
 max_steps: -1
-num_generations: 16
+num_generations: 8
 num_train_epochs: 1
 output_dir: data/Qwen2.5-7B-Instruct
 overwrite_output_dir: true
