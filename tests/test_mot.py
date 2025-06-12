@@ -16,6 +16,6 @@ print("=== RAW EXAMPLE ===")
 print(sample)
 
 # 4. Apply chat template
-processed = apply_chat_template(sample, tokenizer, chat_template="qwen2.5", add_generation_prompt=True)
+processed = apply_chat_template(sample, tokenizer)
 print("\n=== PROMPT AFTER CHAT TEMPLATE ===")
 print(processed["prompt"])
