@@ -1,7 +1,7 @@
 import logging
 
 import datasets
-from datasets import DatasetDict, concatenate_datasets, loaf_from_disk
+from datasets import DatasetDict, concatenate_datasets, load_from_disk
 
 from ..configs import ScriptArguments
 
@@ -21,7 +21,7 @@ def get_dataset(args: ScriptArguments) -> DatasetDict:
     if args.dataset_name and not args.dataset_mixture:
         logger.info(f"Loading dataset: {args.dataset_name}")
         # return datasets.load_dataset(args.dataset_name, args.dataset_config)
-        return loaf_from_disk(args.dataset_path) if args.dataset_path else datasets.load_dataset(args.dataset_name, args.dataset_config)
+        return load_from_disk(args.dataset_path) if args.dataset_path else datasets.load_dataset(args.dataset_name, args.dataset_config)
     elif args.dataset_mixture:
         logger.info(f"Creating dataset mixture with {len(args.dataset_mixture.datasets)} datasets")
         seed = args.dataset_mixture.seed
