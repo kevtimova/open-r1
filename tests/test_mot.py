@@ -1,7 +1,7 @@
 import argparse
 from datasets import load_dataset
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from trl.data_utils import maybe_apply_chat_template
+from trl.data_utils import apply_chat_template
 
 
 def main():
@@ -32,7 +32,7 @@ def main():
     print("\n=== PROMPT AFTER CHAT TEMPLATE ===")
     try:
         import ipdb; ipdb.set_trace()  # Debugging breakpoint
-        prompt = maybe_apply_chat_template(sample, tokenizer)
+        prompt = apply_chat_template(sample, tokenizer)
         print(prompt)
     except Exception as e:
         print("Failed to apply chat template:")
