@@ -98,7 +98,8 @@ def main(script_args, training_args, model_args):
             raise ValueError(f"Dataset Question Field Error: {prompt_column} is not supported.")
 
         prompt.append({"role": "user", "content": example[prompt_column]})
-        return {"prompt": prompt}
+        # return {"prompt": prompt}
+        return {"prompt": example[prompt_column]}
 
     dataset = dataset.map(make_conversation)
 
