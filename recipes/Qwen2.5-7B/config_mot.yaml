@@ -10,6 +10,7 @@ dataset_name: open-r1/Mixture-of-Thoughts
 dataset_config: all
 eos_token: "<|endoftext|>"
 dataset_prompt_column: messages
+dataset_path: ./data/mot_filtered_10k
 
 # GRPO trainer config
 bf16: true
