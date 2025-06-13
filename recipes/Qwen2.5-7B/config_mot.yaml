@@ -14,7 +14,7 @@ dataset_prompt_column: messages
 # GRPO trainer config
 bf16: true
 use_vllm: true
-vllm_gpu_memory_utilization: 0.8
+vllm_gpu_memory_utilization: 0.6
 do_eval: false
 gradient_accumulation_steps: 4
 gradient_checkpointing: true
@@ -44,10 +44,10 @@ report_to:
 reward_funcs:
 - reasoning_steps
 - format
-- tag_count
+- relevance
 reward_weights:
 - 1.0
-- 1.0
+- 0.5
 - 1.0
 save_strategy: "steps"
 save_steps: 100
