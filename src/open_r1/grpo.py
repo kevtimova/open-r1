@@ -116,6 +116,16 @@ def main(script_args, training_args, model_args):
             if "messages" in dataset[split].column_names:
                 dataset[split] = dataset[split].remove_columns("messages")
 
+    from transformers import TrainerCallback
+
+    class CompletionLoggingCallback(TrainerCallback):
+        def on_step_end(self, args, state, control, **kwargs):
+            # If using GRPO, you can try to access the last batch's data
+            # Depending on the GRPOTrainer implementation, you may need to tweak this
+            print(f"[Step {state.global_step}] Completed a training step.")
+            # You might try logging from kwargs['logs'] or other fields
+
+
     #############################
     # Initialize the GRPO trainer
     #############################
@@ -129,6 +139,7 @@ def main(script_args, training_args, model_args):
         callbacks=get_callbacks(training_args, model_args),
         processing_class=tokenizer,
     )
+    trainer.add_callback(CompletionLoggingCallback)
 
     ###############
     # Training loop
