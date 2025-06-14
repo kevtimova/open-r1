@@ -97,13 +97,12 @@ def main(script_args, training_args, model_args):
         if prompt_column not in example:
             raise ValueError(f"Dataset Question Field Error: {prompt_column} is not supported.")
 
-        prompt.append({"role": "user", "content": example[prompt_column]})
-
         if isinstance(example[prompt_column], list):
-            print(f"Length of example[prompt_column]{len(example[prompt_column])}")
-            return {"prompt": example[prompt_column]}
+            prompt.append({"role": "user", "content": example[prompt_column][0]['content']})
+            print(example[prompt_column][0]['content'][:100])
         else:
-            return {"prompt": prompt}
+            prompt.append({"role": "user", "content": example[prompt_column]})
+        return {"prompt": prompt}
 
     dataset = dataset.map(make_conversation)
 
