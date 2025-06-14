@@ -53,9 +53,9 @@ from trl.extras.vllm_client import VLLMClient
 from trl.import_utils import is_liger_kernel_available, is_vllm_available
 from trl.models import create_reference_model, prepare_deepspeed, prepare_fsdp, unwrap_model_for_generation
 from trl.models.utils import _ForwardRedirection
-from trl.callbacks import SyncRefModelCallback
-from trl.grpo_config import GRPOConfig
-from trl.utils import (
+from open_r1.callbacks import SyncRefModelCallback
+from open_r1.grpo_config import GRPOConfig
+from open_r1.utils import (
     disable_dropout_in_model,
     generate_model_card,
     get_comet_experiment_url,
