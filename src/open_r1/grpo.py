@@ -98,6 +98,7 @@ def main(script_args, training_args, model_args):
             raise ValueError(f"Dataset Question Field Error: {prompt_column} is not supported.")
 
         if isinstance(example[prompt_column], list):
+             # Custom logic for Mixture of Thoughts dataset
             assert example[prompt_column][0]['role'] == 'user'
             prompt.append({"role": "user", "content": example[prompt_column][0]['content']})
         else:
