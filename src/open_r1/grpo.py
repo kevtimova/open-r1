@@ -100,7 +100,7 @@ def main(script_args, training_args, model_args):
         prompt.append({"role": "user", "content": example[prompt_column]})
 
         if isinstance(example[prompt_column], list):
-            print(example[prompt_column])
+            print(f"Length of example[prompt_column]{len(example[prompt_column])}")
             return {"prompt": example[prompt_column]}
         else:
             return {"prompt": prompt}
