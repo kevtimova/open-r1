@@ -98,8 +98,8 @@ def main(script_args, training_args, model_args):
             raise ValueError(f"Dataset Question Field Error: {prompt_column} is not supported.")
 
         if isinstance(example[prompt_column], list):
+            assert example[prompt_column][0]['role'] == 'user'
             prompt.append({"role": "user", "content": example[prompt_column][0]['content']})
-            print(example[prompt_column][0]['content'][:100])
         else:
             prompt.append({"role": "user", "content": example[prompt_column]})
         return {"prompt": prompt}
