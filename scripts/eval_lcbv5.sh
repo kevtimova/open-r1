@@ -14,4 +14,5 @@ MODEL_ARGS="model_name=$MODEL,dtype=bfloat16,max_model_length=32768,gpu_memory_u
 # === Run Evaluation ===
 lighteval vllm $MODEL_ARGS "lighteval|$TASK|0|0" \
     --use-chat-template \
-    --output-dir $OUTPUT_DIR
+    --output-dir $OUTPUT_DIR \
+    --no-check-hub
