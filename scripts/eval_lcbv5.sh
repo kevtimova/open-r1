@@ -4,7 +4,7 @@ export VLLM_WORKER_MULTIPROC_METHOD=spawn
 
 # === Configuration ===
 NUM_GPUS=1
-MODEL_NAME=Qwen2.5-1.5B-MoT-GRPO-2025-06-14-22-39
+MODEL_NAME=Qwen2.5-1.5B-MoT-GRPO-2025-06-14-22-39/checkpoint-2200
 MODEL=data/$MODEL_NAME
 TASK=livecodebenchv5
 OUTPUT_DIR=data/evals/$MODEL_NAME/$TASK
