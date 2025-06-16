@@ -15,7 +15,7 @@ system_prompt: "You are a helpful AI Assistant that provides well-reasoned and d
 bf16: true
 use_vllm: true
 vllm_gpu_memory_utilization: 0.6
-do_eval: false
+do_eval: true
 gradient_accumulation_steps: 4
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
@@ -44,15 +44,17 @@ push_to_hub: false
 report_to:
 - wandb
 reward_funcs:
-- reasoning_steps
+- accuracy
 - format
 - tag_count
+- reasoning_steps
 reward_weights:
 - 1.0
 - 1.0
-- 1.0
+- 0.5
+- 0.5
 save_strategy: "steps"
 save_steps: 200
-save_total_limit: 1
+save_total_limit: 20
 seed: 42
 warmup_ratio: 0.1
