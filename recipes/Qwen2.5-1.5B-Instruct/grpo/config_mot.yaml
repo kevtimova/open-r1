@@ -45,7 +45,9 @@ report_to:
 - wandb
 reward_funcs:
 - code_format
+- format_reward
 reward_weights:
+- 1.0
 - 1.0
 save_strategy: "steps"
 save_steps: 200
