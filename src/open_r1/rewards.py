@@ -47,12 +47,46 @@ def accuracy_reward(completions: list[list[dict[str, str]]], **kwargs) -> list[O
     # Print first few items to understand structure
     if completions:
         print("First completion:", completions[0] if len(completions) > 0 else "Empty")
-    
+    contents = [completion[0]["content"] for completion in completions]
+
     for key, value in kwargs.items():
         if isinstance(value, (list, dict)):
             print(f"Kwargs[{key}] type: {type(value)}, length/keys: {len(value) if hasattr(value, '__len__') else 'N/A'}")
         else:
             print(f"Kwargs[{key}]: {value}")
+    
+    # Extract solutions from the source data
+    source = kwargs.get('source', [])
+    
+    if not source:
+        print("Warning: No source data found")
+        return [None] * len(contents)
+    
+    # Debug: Let's see what's in the source
+    print("Source type:", type(source))
+    print("First source item:", source[0] if len(source) > 0 else "Empty")
+    print("Source item keys:", list(source[0].keys()) if len(source) > 0 and isinstance(source[0], dict) else "Not a dict")
+    
+    
+
+    # Extract solutions from source - adjust the key name based on your dataset
+    solutions = []
+    for src in source:
+        if isinstance(src, dict):
+            # Try common field names for solutions
+            solution = (src.get('solution') or 
+                       src.get('answer') or 
+                       src.get('target') or 
+                       src.get('reference') or
+                       src.get('ground_truth'))
+            solutions.append(solution)
+        else:
+            solutions.append(None)
+    
+    if not any(solutions):
+        print("Warning: No solutions found in source data")
+        print("Available keys in source[0]:", list(source[0].keys()) if source and isinstance(source[0], dict) else "N/A")
+        return [None] * len(contents)
     
     # Temporary return to avoid crash while debugging
     return [None] * len(completions) if completions else []
