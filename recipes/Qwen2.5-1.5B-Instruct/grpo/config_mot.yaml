@@ -44,8 +44,8 @@ push_to_hub: false
 report_to:
 - wandb
 reward_funcs:
-- code_format
-- format_reward
+- code
+- format
 reward_weights:
 - 1.0
 - 1.0
