@@ -44,15 +44,13 @@ push_to_hub: false
 report_to:
 - wandb
 reward_funcs:
-- accuracy
 - format
 - tag_count
 - reasoning_steps
 reward_weights:
 - 1.0
 - 1.0
-- 0.5
-- 0.5
+- 1.0
 save_strategy: "steps"
 save_steps: 200
 save_total_limit: 20
