@@ -6,7 +6,7 @@ attn_implementation: flash_attention_2
 
 # Data training arguments
 dataset_name: open-r1/Mixture-of-Thoughts
-dataset_config: all
+dataset_config: code
 eos_token: "<|endoftext|>"
 dataset_prompt_column: messages
 system_prompt: "You are a helpful AI Assistant that provides well-reasoned and detailed responses. You first think about the reasoning process as an internal monologue and then provide the user with the answer. Respond in the following format: <think>\n...\n</think>\n<answer>\n...\n</answer>"
@@ -15,7 +15,7 @@ system_prompt: "You are a helpful AI Assistant that provides well-reasoned and d
 bf16: true
 use_vllm: true
 vllm_gpu_memory_utilization: 0.6
-do_eval: true
+do_eval: false
 gradient_accumulation_steps: 4
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
@@ -44,13 +44,11 @@ push_to_hub: false
 report_to:
 - wandb
 reward_funcs:
-- format
-- tag_count
-- reasoning_steps
+- cf_code_reward
+- code_format
 reward_weights:
 - 1.0
-- 1.0
-- 1.0
+- 0.1
 save_strategy: "steps"
 save_steps: 200
 save_total_limit: 20
