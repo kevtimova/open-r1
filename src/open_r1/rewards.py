@@ -36,8 +36,8 @@ from .utils.competitive_programming import patch_code as cf_patch_code
 from .utils.competitive_programming import score_submission as cf_score_submission
 from .utils.competitive_programming import score_subtask
 
-
-def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str], **kwargs) -> list[Optional[float]]:
+def accuracy_reward(completions: list[list[dict[str, str]]], **kwargs) -> list[Optional[float]]:
+# def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str], **kwargs) -> list[Optional[float]]:
     """Reward function that checks if the completion is the same as the ground truth."""
     # Debug: Print what we receive
     print("Completions type:", type(completions))
