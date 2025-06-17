@@ -36,101 +36,48 @@ from .utils.competitive_programming import patch_code as cf_patch_code
 from .utils.competitive_programming import score_submission as cf_score_submission
 from .utils.competitive_programming import score_subtask
 
-def accuracy_reward(completions: list[list[dict[str, str]]], **kwargs) -> list[Optional[float]]:
-# def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str], **kwargs) -> list[Optional[float]]:
-    """Reward function that checks if the completion is the same as the ground truth."""
-    # Debug: Print what we receive
-    print("Completions type:", type(completions))
-    print("Completions length:", len(completions) if completions else "None")
-    print("Kwargs keys:", list(kwargs.keys()) if kwargs else "No kwargs")
-    
-    # Print first few items to understand structure
-    if completions:
-        print("First completion:", completions[0] if len(completions) > 0 else "Empty")
+def accuracy_reward(completions: list[list[dict[str, str]]], solution: list[str], **kwargs) -> list[Optional[float]]:
     contents = [completion[0]["content"] for completion in completions]
-
-    for key, value in kwargs.items():
-        if isinstance(value, (list, dict)):
-            print(f"Kwargs[{key}] type: {type(value)}, length/keys: {len(value) if hasattr(value, '__len__') else 'N/A'}")
+    rewards = []
+    for content, sol in zip(contents, solution):
+        gold_parsed = parse(
+            sol,
+            extraction_mode="first_match",
+        )
+        if len(gold_parsed) != 0:
+            # We require the answer to be provided in correct latex (no malformed operators)
+            answer_parsed = parse(
+                content,
+                extraction_config=[
+                    LatexExtractionConfig(
+                        normalization_config=NormalizationConfig(
+                            nits=False,
+                            malformed_operators=False,
+                            basic_latex=True,
+                            equations=True,
+                            boxed="all",
+                            units=True,
+                        ),
+                        # Ensures that boxed is tried first
+                        boxed_match_priority=0,
+                        try_extract_without_anchor=False,
+                    )
+                ],
+                extraction_mode="first_match",
+            )
+            # Compute binary rewards if verifiable, `None` otherwise to skip this example
+            try:
+                reward = float(verify(gold_parsed, answer_parsed))
+            except Exception as e:
+                print(f"verify failed: {e}, answer: {answer_parsed}, gold: {gold_parsed}")
+                reward = None
         else:
-            print(f"Kwargs[{key}]: {value}")
-    
-    # Extract solutions from the source data
-    source = kwargs.get('source', [])
-    
-    if not source:
-        print("Warning: No source data found")
-        return [None] * len(contents)
-    
-    # Debug: Let's see what's in the source
-    print("Source type:", type(source))
-    print("First source item:", source[0] if len(source) > 0 else "Empty")
-    print("Source item keys:", list(source[0].keys()) if len(source) > 0 and isinstance(source[0], dict) else "Not a dict")
-    
-    
+            # If the gold solution is not parseable, we assign `None` to skip this example
+            reward = None
+            print("Failed to parse gold solution: ", sol)
+        rewards.append(reward)
 
-    # Extract solutions from source - adjust the key name based on your dataset
-    solutions = []
-    for src in source:
-        if isinstance(src, dict):
-            # Try common field names for solutions
-            solution = (src.get('solution') or 
-                       src.get('answer') or 
-                       src.get('target') or 
-                       src.get('reference') or
-                       src.get('ground_truth'))
-            solutions.append(solution)
-        else:
-            solutions.append(None)
-    
-    if not any(solutions):
-        print("Warning: No solutions found in source data")
-        print("Available keys in source[0]:", list(source[0].keys()) if source and isinstance(source[0], dict) else "N/A")
-        return [None] * len(contents)
-    
-    # Temporary return to avoid crash while debugging
-    return [None] * len(completions) if completions else []
-    # contents = [completion[0]["content"] for completion in completions]
-    # rewards = []
-    # for content, sol in zip(contents, solution):
-    #     gold_parsed = parse(
-    #         sol,
-    #         extraction_mode="first_match",
-    #     )
-    #     if len(gold_parsed) != 0:
-    #         # We require the answer to be provided in correct latex (no malformed operators)
-    #         answer_parsed = parse(
-    #             content,
-    #             extraction_config=[
-    #                 LatexExtractionConfig(
-    #                     normalization_config=NormalizationConfig(
-    #                         nits=False,
-    #                         malformed_operators=False,
-    #                         basic_latex=True,
-    #                         equations=True,
-    #                         boxed="all",
-    #                         units=True,
-    #                     ),
-    #                     # Ensures that boxed is tried first
-    #                     boxed_match_priority=0,
-    #                     try_extract_without_anchor=False,
-    #                 )
-    #             ],
-    #             extraction_mode="first_match",
-    #         )
-    #         # Compute binary rewards if verifiable, `None` otherwise to skip this example
-    #         try:
-    #             reward = float(verify(gold_parsed, answer_parsed))
-    #         except Exception as e:
-    #             print(f"verify failed: {e}, answer: {answer_parsed}, gold: {gold_parsed}")
-    #             reward = None
-    #     else:
-    #         # If the gold solution is not parseable, we assign `None` to skip this example
-    #         reward = None
-    #         print("Failed to parse gold solution: ", sol)
-    #     rewards.append(reward)
-
-    # return rewards
+    return rewards
 
 
 def format_reward(completions, **kwargs):
