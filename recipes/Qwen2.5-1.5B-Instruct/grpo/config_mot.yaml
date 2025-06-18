@@ -44,9 +44,11 @@ push_to_hub: false
 report_to:
 - wandb
 reward_funcs:
-- code_format
+- code_format_language_agnostic
 - format
+- tag_count
 reward_weights:
+- 1.0
 - 1.0
 - 1.0
 save_strategy: "steps"
