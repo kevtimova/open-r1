@@ -614,6 +614,21 @@ def get_code_format_reward(language: str = "python"):
 
     return code_format_reward
 
+def code_format_language_agnostict_reward(completions, **kwargs):
+    """Format reward function that checks if the code is enclosed within <answer> and </answer> tags.
+    This function is language-agnostic and does not check for specific programming languages.
+    """
+    completion_contents = [completion[0]["content"] for completion in completions]
+    matches = [
+            re.match(
+                rf"^<think>\n.*?\n</think>\n<answer>\n.*?```.*?```.*?\n</answer>$",
+                content,
+                re.DOTALL | re.MULTILINE,
+            )
+            for content in completion_contents
+        ]
+    return [1.0 if match else 0.0 for match in matches]
+
 
 def get_soft_overlong_punishment(max_completion_len, soft_punish_cache):
     """
@@ -693,6 +708,7 @@ def get_reward_funcs(script_args) -> list[Callable]:
             cf_code_reward,
         ),
         "code_format": get_code_format_reward(language=script_args.code_language),
+        "code_format_language_agnostic": code_format_language_agnostict_reward,
         "tag_count": tag_count_reward,
         "soft_overlong_punishment": get_soft_overlong_punishment(
             max_completion_len=script_args.max_completion_len,
