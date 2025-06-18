@@ -1,15 +1,19 @@
 from datasets import load_dataset, DatasetDict
 import argparse
+import lighteval
 
-def filter_dataset(dataset_name="open-r1/Mixture-of-Thoughts", domain='all', split="train"):
+def filter_dataset(dataset_name="open-r1/Mixture-of-Thoughts",
+                   domain='all',
+                   split="train",
+                   split_sizes=[10000, 5000, 3000]):
     """
     Load and filter the dataset based on the number of tokens.
     """
     # Load the full dataset
-    ds = load_dataset(dataset_name, domain, split="train")
+    ds = load_dataset(dataset_name, domain, split=split)
 
     # Prompt length
-    for n in [10000, 5000, 3000]:
+    for n in split_sizes:
         # Filter out examples with more than n tokens
         filtered_ds = ds.filter(lambda x: x["num_tokens"] <= n)
         dataset = DatasetDict({"train": filtered_ds})
@@ -23,7 +27,9 @@ if __name__ == "__main__":
     parser.add_argument("--dataset_name", type=str, default="open-r1/Mixture-of-Thoughts", help="Name of the dataset to filter.")
     parser.add_argument("--domain", type=str, default="all", help="Domain: code|math|science|all.")
     parser.add_argument("--split", type=str, default="train", help="Dataset split to filter.")
+    parser.add_argument("--split_sizes", type=str, default="10000,5000,3000", help="Comma-separate list of number of tokens to filter by.")
     args = parser.parse_args()
 
     # Call the filter function with parsed arguments
-    filter_dataset(dataset_name=args.dataset_name, domain=args.domain, split=args.split)
+    split_sizes = list(map(int, args.split_sizes.split(',')))
+    filter_dataset(dataset_name=args.dataset_name, domain=args.domain, split=args.split, split_sizes=split_sizes)
