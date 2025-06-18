@@ -9,7 +9,7 @@ def filter_dataset(dataset_name="open-r1/Mixture-of-Thoughts", domain='all', spl
     ds = load_dataset(dataset_name, domain, split="train")
 
     # Prompt length
-    for n in [10000, 8000, 5000, 3000]:
+    for n in [10000, 5000, 3000]:
         # Filter out examples with more than n tokens
         filtered_ds = ds.filter(lambda x: x["num_tokens"] <= n)
         dataset = DatasetDict({"train": filtered_ds})
