@@ -21,7 +21,7 @@ def get_dataset(args: ScriptArguments) -> DatasetDict:
     if args.dataset_name and not args.dataset_mixture:
         logger.info(f"Loading dataset: {args.dataset_name}")
         # return datasets.load_dataset(args.dataset_name, args.dataset_config)
-        return load_from_disk('./data/mot_code_filtered_10k') if args.dataset_name == 'open-r1/Mixture-of-Thoughts' else datasets.load_dataset(args.dataset_name, args.dataset_config)
+        return load_from_disk('./data/mot_code_filtered_8k') if args.dataset_name == 'open-r1/Mixture-of-Thoughts' else datasets.load_dataset(args.dataset_name, args.dataset_config)
     elif args.dataset_mixture:
         logger.info(f"Creating dataset mixture with {len(args.dataset_mixture.datasets)} datasets")
         seed = args.dataset_mixture.seed
