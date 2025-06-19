@@ -655,7 +655,7 @@ def get_soft_overlong_punishment(max_completion_len, soft_punish_cache):
 
     return soft_overlong_punishment_reward
 
-def code_reward_mot(completions, **kwargs):
+def code_judge_reward(completions, **kwargs):
     from example_gpt_reward import generate_reward
     """Reward function for Mixture of Thoughts dataset that uses GPT to evaluate the code."""
     completion_contents = [completion[0]["content"] for completion in completions]
@@ -726,7 +726,7 @@ def get_reward_funcs(script_args) -> list[Callable]:
         ),
         "code_format": get_code_format_reward(language=script_args.code_language),
         "code_format_language_agnostic": code_format_language_agnostict_reward,
-        "code_reward_mot": code_reward_mot,
+        "code_judge": code_judge_reward,
         "tag_count": tag_count_reward,
         "soft_overlong_punishment": get_soft_overlong_punishment(
             max_completion_len=script_args.max_completion_len,
