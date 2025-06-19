@@ -718,6 +718,7 @@ def get_reward_funcs(script_args) -> list[Callable]:
         ),
         "code_format": get_code_format_reward(language=script_args.code_language),
         "code_format_language_agnostic": code_format_language_agnostict_reward,
+        "code_format_mot": code_reward_mot,
         "tag_count": tag_count_reward,
         "soft_overlong_punishment": get_soft_overlong_punishment(
             max_completion_len=script_args.max_completion_len,
