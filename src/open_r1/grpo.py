@@ -132,6 +132,16 @@ def main(script_args, training_args, model_args):
         processing_class=tokenizer,
     )
 
+    ##########
+    # Evaluate
+    ##########
+    if training_args.do_eval:
+        logger.info("*** Evaluate ***")
+        metrics = trainer.evaluate()
+        metrics["eval_samples"] = len(dataset[script_args.dataset_test_split])
+        trainer.log_metrics("eval", metrics)
+        trainer.save_metrics("eval", metrics)
+
 
     ###############
     # Training loop
