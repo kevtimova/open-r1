@@ -103,7 +103,13 @@ def main(script_args, training_args, model_args):
             prompt.append({"role": "user", "content": example[prompt_column][0]['content']})
         else:
             prompt.append({"role": "user", "content": example[prompt_column]})
-        return {"prompt": prompt}
+        # Add the code reference to output, if available
+        out = {"prompt": prompt}
+        try:
+            out["code_reference"] = example[prompt_column][-1]['content']
+        except:
+            out["code_reference"] = None
+        return out
 
     dataset = dataset.map(make_conversation)
 
