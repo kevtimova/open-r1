@@ -659,10 +659,18 @@ def code_reward_mot(completions, **kwargs):
     from example_gpt_reward import generate_reward
     """Reward function for Mixture of Thoughts dataset that uses GPT to evaluate the code."""
     completion_contents = [completion[0]["content"] for completion in completions]
-    import ipdb; ipdb.set_trace()
     original_code = kwargs["code_reference"]
+    original_prompts = ['\n'.join([item[0]['content'], item[1]['content']]) for item in kwargs["prompts"]]
     
-    return
+    # Generate rewards using the GPT model
+    rewards = []
+    for prompt, code, content in zip(original_prompts, original_code, completion_contents):
+        rewards.append(generate_reward(
+            question=prompt,
+            reference_answer=code,
+            prediction=content,
+        ))
+    return rewards
 
 
 def get_reward_funcs(script_args) -> list[Callable]:
