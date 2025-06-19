@@ -655,6 +655,15 @@ def get_soft_overlong_punishment(max_completion_len, soft_punish_cache):
 
     return soft_overlong_punishment_reward
 
+def code_reward_mot(completions, **kwargs):
+    from example_gpt_reward import generate_reward
+    """Reward function for Mixture of Thoughts dataset that uses GPT to evaluate the code."""
+    completion_contents = [completion[0]["content"] for completion in completions]
+    import ipdb; ipdb.set_trace()
+    original_code = kwargs["code_reference"]
+    
+    return
+
 
 def get_reward_funcs(script_args) -> list[Callable]:
     REWARD_FUNCS_REGISTRY = {
