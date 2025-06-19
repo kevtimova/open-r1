@@ -1,5 +1,8 @@
 
 from openai import OpenAI
+import openai
+import time
+
 client = OpenAI()
 
 prompt_template = """
@@ -52,26 +55,32 @@ Additional background:
 Remember, you are RewardGPT. You output a reward given this input: question and prediction (shown above). If the prediction is correct, return "correct". If the prediction is incorrect, return "incorrect" wrapped in <reward>, such as <reward>correct</reward> or <reward>incorrect</reward>. Do not output anything else. Do not output any additional text or explanations. Just output the reward.
 """.strip()
 
-def generate_reward(question, reference_answer, prediction) -> int:
-    prompt = prompt_template.format(
-        question=question,
-        reference_answer=reference_answer,
-        prediction=prediction
-    )
-    
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.0,
-        max_tokens=20,
-        stop=["</reward>"]
-    )
-    
+
+def chat_completion(prompt, num_retries=5) -> str:
+    response = None
+    for i in range(num_retries):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ],
+                temperature=0.0,
+                max_tokens=20,
+                stop=["</reward>"]
+            )
+            break
+        except openai.RateLimitError as e:
+            print(f"Rate limit error: {e}")
+            sleep_time = 10 * (2 ** i)  # Exponential backoff
+            print(f"Retrying in {sleep_time} seconds...")
+            time.sleep(sleep_time)
+    if response is None:
+        raise RuntimeError(f"Failed to get a response after {num_retries} retries.")
+
     content = raw_content = response.choices[0].message.content
 
     if content.startswith("<reward>"):
@@ -79,6 +88,17 @@ def generate_reward(question, reference_answer, prediction) -> int:
     if content not in ("correct", "incorrect"):
         print(f"WARNING: The response is not formatted correctly.\nResponse: {raw_content}")
         content = "incorrect"
+    return content
+
+
+def generate_reward(question, reference_answer, prediction) -> int:
+    # TODO: (optional) Remove think tokens.
+    prompt = prompt_template.format(
+        question=question,
+        reference_answer=reference_answer,
+        prediction=prediction
+    )
+    content = chat_completion(prompt)
     return 1 if content == "correct" else 0
 
 def generate_reward_without_reference(question, prediction) -> int:
@@ -86,27 +106,7 @@ def generate_reward_without_reference(question, prediction) -> int:
         question=question,
         prediction=prediction
     )
-    
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.0,
-        max_tokens=20,
-        stop=["</reward>"]
-    )
-    
-    content = raw_content = response.choices[0].message.content
-
-    if content.startswith("<reward>"):
-        content = content[len("<reward>"):]
-    if content not in ("correct", "incorrect"):
-        print(f"WARNING: The response is not formatted correctly.\nResponse: {raw_content}")
-        content = "incorrect"
+    content = chat_completion(prompt)
     return 1 if content == "correct" else 0
 
 def example():
