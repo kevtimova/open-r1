@@ -28,7 +28,7 @@ from open_r1.utils.callbacks import get_callbacks
 from open_r1.utils.wandb_logging import init_wandb_training
 from trl import GRPOTrainer, ModelConfig, TrlParser, get_peft_config
 
-from utils.extract_data import extract_test_cases, extract_programming_language
+from open_r1.utils import extract_test_cases, extract_programming_language
 
 
 logger = logging.getLogger(__name__)
