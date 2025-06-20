@@ -28,6 +28,8 @@ from open_r1.utils.callbacks import get_callbacks
 from open_r1.utils.wandb_logging import init_wandb_training
 from trl import GRPOTrainer, ModelConfig, TrlParser, get_peft_config
 
+from utils.extract_data import extract_test_cases, extract_programming_language
+
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +111,29 @@ def main(script_args, training_args, model_args):
             out["code_reference"] = example[prompt_column][-1]['content']
         except:
             out["code_reference"] = None
+
+        # Extract tests from code, if available
+        try:
+            import ipdb; ipdb.set_trace()
+            inputs, outputs = extract_test_cases([prompt_column][0]['content'])
+            language = extract_programming_language([prompt_column][0]['content'])
+            test_cases = []
+            for input_data, output_data in zip(inputs, outputs):
+                test_case = {
+                    "input": str(input_data),
+                    "output": str(output_data),
+                    "type": "stdin_stdout"
+                }
+                test_cases.append(test_case)
+
+            out["verification_info"] = {
+                    "language": language,
+                    "test_cases": test_cases
+                }
+        except:
+            out["verification_info"]
         return out
+
 
     dataset = dataset.map(make_conversation)
 
