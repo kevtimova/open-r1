@@ -113,8 +113,8 @@ def main(script_args, training_args, model_args):
             out["code_reference"] = None
 
         # Extract tests from code, if available
-        try:
-            import ipdb; ipdb.set_trace()
+        import ipdb; ipdb.set_trace()
+        try:            
             inputs, outputs = extract_test_cases([prompt_column][0]['content'])
             language = extract_programming_language([prompt_column][0]['content'])
             test_cases = []
@@ -131,7 +131,7 @@ def main(script_args, training_args, model_args):
                     "test_cases": test_cases
                 }
         except:
-            out["verification_info"]
+            out["verification_info"] = None
         return out
 
 
