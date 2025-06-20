@@ -7,10 +7,10 @@ def extract_test_cases(prompt: str) -> list[dict]:
         output_blocks = re.findall(r'```output\s*\n(.*?)\n```', prompt, re.DOTALL)
         # Ensure that input and output blocks are paired correctly
         if len(input_blocks) != len(output_blocks):
-            return [], []
+            return [""], [""]
         # If no input or output blocks are found, return empty lists
         elif len(input_blocks) == 0:
-            return [], []
+            return [""], [""]
         # If there is only one input and output block, return them as lists
         elif len(input_blocks) == 1:
             inputs = input_blocks[0].splitlines()
@@ -27,7 +27,7 @@ def extract_test_cases(prompt: str) -> list[dict]:
                         out_items.append(outputs[i])
                 else:
                     # Otherwise, return empty lists
-                    return [], []
+                    return [""], [" "]
             else:
                 # If the number of inputs and outputs is the same, return them as lists
                 return inputs, outputs

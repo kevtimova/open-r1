@@ -115,7 +115,7 @@ def main(script_args, training_args, model_args):
         # Extract tests from code, if available
         import ipdb; ipdb.set_trace()
         try:            
-            inputs, outputs = extract_test_cases([prompt_column][0]['content'])
+            inputs, outputs = extract_test_cases(example[prompt_column][0]['content'])
             language = extract_programming_language([prompt_column][0]['content'])
             test_cases = []
             for input_data, output_data in zip(inputs, outputs):
