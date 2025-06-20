@@ -27,7 +27,7 @@ def extract_test_cases(prompt: str) -> list[dict]:
                         out_items.append(outputs[i])
                 else:
                     # Otherwise, return empty lists
-                    return [""], [" "]
+                    return [""], [""]
             else:
                 # If the number of inputs and outputs is the same, return them as lists
                 return inputs, outputs
