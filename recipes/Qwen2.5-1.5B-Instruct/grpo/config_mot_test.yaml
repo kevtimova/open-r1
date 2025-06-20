@@ -35,7 +35,7 @@ max_completion_length: 5000
 max_length: 10000
 pad_to_max_length: false
 max_steps: -1
-num_generations: 4
+num_generations: 2
 num_train_epochs: 1
 output_dir: data/Qwen2.5-1.5B-MoT-GRPO
 overwrite_output_dir: true
