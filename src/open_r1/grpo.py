@@ -131,7 +131,10 @@ def main(script_args, training_args, model_args):
                 }
         except:
             print("Warning: No test cases found in the prompt.")
-            out["verification_info"] = None
+            out["verification_info"] = {
+                "language": "python",  # Default to Python if no language is found
+                "test_cases": []
+            }
         return out
 
 
