@@ -37,7 +37,7 @@ def extract_test_cases(prompt: str) -> list[dict]:
 def extract_programming_language(prompt: str) -> str:
     """Extract programming language from the prompt."""
     match = re.findall(r'```(\w+)', prompt)
-    match = match.map(lambda x: x.lower())
+    match = [word.lower() for word in match]
     if "cpp" in match or "c++" in match:
         return "cpp"
     elif "python" in match:
