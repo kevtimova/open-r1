@@ -113,7 +113,6 @@ def main(script_args, training_args, model_args):
             out["code_reference"] = None
 
         # Extract tests from code, if available
-        import ipdb; ipdb.set_trace()
         try:            
             inputs, outputs = extract_test_cases(example[prompt_column][0]['content'])
             language = extract_programming_language(example[prompt_column][0]['content'])
