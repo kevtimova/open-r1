@@ -116,7 +116,7 @@ def main(script_args, training_args, model_args):
         import ipdb; ipdb.set_trace()
         try:            
             inputs, outputs = extract_test_cases(example[prompt_column][0]['content'])
-            language = extract_programming_language([prompt_column][0]['content'])
+            language = extract_programming_language(example[prompt_column][0]['content'])
             test_cases = []
             for input_data, output_data in zip(inputs, outputs):
                 test_case = {
