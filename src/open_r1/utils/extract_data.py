@@ -7,9 +7,11 @@ def extract_test_cases(prompt: str) -> list[dict]:
         output_blocks = re.findall(r'```output\s*\n(.*?)\n```', prompt, re.DOTALL)
         # Ensure that input and output blocks are paired correctly
         if len(input_blocks) != len(output_blocks):
+            print("Warning: Mismatched input and output blocks found in the prompt.")
             return [""], [""]
         # If no input or output blocks are found, return empty lists
         elif len(input_blocks) == 0:
+            print("Warning: No input or output blocks found in the prompt.")
             return [""], [""]
         # If there is only one input and output block, return them as lists
         elif len(input_blocks) == 1:
@@ -27,6 +29,7 @@ def extract_test_cases(prompt: str) -> list[dict]:
                         out_items.append(outputs[i])
                 else:
                     # Otherwise, return empty lists
+                    print("Warning: Number of inputs is not divisible by number of outputs.")
                     return [""], [""]
             else:
                 # If the number of inputs and outputs is the same, return them as lists
