@@ -143,6 +143,7 @@ class E2BProvider(CodeExecutionProvider):
         REQUEST_TIMEOUT = SANDBOX_TIMEOUT - MARGIN
         ASYNCIO_TIMEOUT = SANDBOX_TIMEOUT + MARGIN
 
+        sandbox = None
         async with semaphore:
             try:
                 sandbox = await AsyncSandbox.create(timeout=SANDBOX_TIMEOUT, request_timeout=REQUEST_TIMEOUT)
@@ -160,10 +161,13 @@ class E2BProvider(CodeExecutionProvider):
                 print(f"Error in `_run_script` from E2B sandbox ID {sandbox.sandbox_id} : {e}")
                 return 0.0
             finally:
-                try:
-                    await sandbox.kill()
-                except Exception as e:
-                    print(f"Error from E2B executor kill with sandbox ID {sandbox.sandbox_id} : {e}")
+                if sandbox:
+                    try:
+                        await sandbox.kill()
+                    except Exception as e:
+                        print(f"Error from E2B executor kill with sandbox ID {sandbox.sandbox_id} : {e}")
+                else:
+                    print("No sandbox to close, skipping cleanup.")
 
 
 class MorphProvider(CodeExecutionProvider):
