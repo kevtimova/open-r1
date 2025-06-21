@@ -130,6 +130,7 @@ def main(script_args, training_args, model_args):
                     "test_cases": test_cases
                 }
         except:
+            print("Warning: No test cases found in the prompt.")
             out["verification_info"] = None
         return out
 
