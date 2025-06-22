@@ -57,3 +57,4 @@ seed: 42
 warmup_ratio: 0.1
 eval_strategy: "steps"
 eval_steps: 10
+eval_on_start: true
