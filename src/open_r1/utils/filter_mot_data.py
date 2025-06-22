@@ -1,13 +1,14 @@
 from datasets import load_dataset, DatasetDict
 import argparse
-from open_r1.utils import extract_programming_language
+from open_r1.utils import extract_programming_language, extract_test_cases
+
 
 def filter_dataset(dataset_name="open-r1/Mixture-of-Thoughts",
                    domain='all',
                    split="train",
                    split_sizes=[10000, 8000, 5000, 3000],
                    language="all",
-                   test_size=0.1,
+                   test_size=10,
                    seed=42):
     """
     Load and filter the dataset based on the number of tokens.
@@ -17,6 +18,12 @@ def filter_dataset(dataset_name="open-r1/Mixture-of-Thoughts",
     if language != "all":
         # Filter the dataset by programming language if specified
         ds = ds.filter(lambda x: extract_programming_language(x["messages"][0]["content"]) == language)
+    # Remove samples without test cases
+    def has_test_cases(example):
+        prompt = example["messages"][0]["content"]
+        test_cases = extract_test_cases(prompt)
+        return len(test_cases) > 0
+    ds = ds.filter(lambda x: has_test_cases(x))
 
     # Prompt length
     for n in split_sizes:
@@ -40,7 +47,7 @@ if __name__ == "__main__":
     parser.add_argument("--domain", type=str, default="all", help="Domain: code|math|science|all.")
     parser.add_argument("--split", type=str, default="train", help="Dataset split to filter.")
     parser.add_argument("--split_sizes", type=str, default="10000,8000,5000,3000", help="Comma-separate list of number of tokens to filter by.")
-    parser.add_argument("--test_size", type=float, default=0.1, help="Proportion of the dataset to include in the test split.")
+    parser.add_argument("--test_size", type=int, default=10, help="Number of test samples in split.")
     parser.add_argument("--seed", type=int, default=42, help="Random seed for reproducibility.")
     parser.add_argument("--language", type=str, default="all", help="Programming language to filter by (default: all).")
     args = parser.parse_args()
