@@ -115,7 +115,6 @@ def main(script_args, training_args, model_args):
         # Extract tests from code, if available
         try:            
             inputs, outputs = extract_test_cases(example[prompt_column][0]['content'])
-            language = extract_programming_language(example[prompt_column][0]['content'])
             test_cases = []
             for input_data, output_data in zip(inputs, outputs):
                 test_case = {
@@ -125,6 +124,7 @@ def main(script_args, training_args, model_args):
                 }
                 test_cases.append(test_case)
 
+            language = extract_programming_language(example[prompt_column][0]['content'])
             out["verification_info"] = {
                     "language": language,
                     "test_cases": test_cases

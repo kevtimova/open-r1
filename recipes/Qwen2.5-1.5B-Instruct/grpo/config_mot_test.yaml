@@ -54,6 +54,7 @@ reward_weights:
 - 1.0
 - 1.0
 - 1.0
+provider_type: morph
 save_strategy: "steps"
 save_steps: 25
 save_total_limit: 100
