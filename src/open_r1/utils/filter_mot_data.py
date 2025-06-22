@@ -49,6 +49,7 @@ if __name__ == "__main__":
     split_sizes = list(map(int, args.split_sizes.split(',')))
     filter_dataset(dataset_name=args.dataset_name,
                    domain=args.domain,
+                   language=args.language,
                    split=args.split,
                    split_sizes=split_sizes,
                    test_size=args.test_size,
