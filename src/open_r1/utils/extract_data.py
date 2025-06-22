@@ -1,6 +1,7 @@
 import re
 
 
+
 def extract_test_cases(prompt: str) -> list[dict]:
         """Extract test cases from the prompt."""
         input_blocks = re.findall(r'```input\s*\n(.*?)\n```', prompt, re.DOTALL)
@@ -45,4 +46,4 @@ def extract_programming_language(prompt: str) -> str:
         return "cpp"
     elif "python" in match:
         return "python"
-    return "python"  # Default to Python if no language is found
+    raise ValueError(f"Programming language cpp or python not found in the prompt. {prompt}")
