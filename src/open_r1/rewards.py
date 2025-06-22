@@ -511,6 +511,7 @@ def code_reward(
     num_parallel: int = 2,
     provider_type: str = "e2b",
     enforce_same_language: bool = False,
+    verification_info: list[list[dict]] = None,
     **kwargs,
 ) -> list[float]:
     """Reward function that evaluates code snippets using a code execution provider.
@@ -564,8 +565,8 @@ def code_reward(
     evaluate_code(code_snippet, test_cases)
     """
 
-    code_snippets = [extract_code(completion[-1]["content"]) for completion in completions]
-    verification_info = kwargs["verification_info"]
+    verification_info = kwargs["verification_info"] if verification_info is None else verification_info
+    code_snippets = [extract_code(completion[-1]["content"], language=info["language"]) for completion, info in zip(completions, verification_info)]
 
     template = evaluation_script_template
 
