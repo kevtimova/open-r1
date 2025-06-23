@@ -1,6 +1,6 @@
 from transformers import AutoTokenizer
 from datasets import load_from_disk, Dataset
-
+import argparse
 
 def truncate_data(max_n_tokens, 
                   dataset, 
@@ -59,32 +59,24 @@ def truncate_data(max_n_tokens,
     # Save new truncated dataset 
     truncated_dataset = Dataset.filter_mot_data(truncated_dataset)
     dataset['test'] = truncated_dataset
-    # dataset.save_to_disk(f"{dataset}_truncated_{max_n_tokens}_tokens")
+    dataset.save_to_disk(f"{dataset}_truncated_{max_n_tokens}_tokens")
 
 # Example usage and testing
 if __name__ == "__main__":
-    # Example MoT dataset sample
-    sample_dataset = [
-        {
-            'prompt': 'Solve this math problem: 2 + 2 = ?',
-            'completions': 'Let me think about this step by step. First, I need to understand what addition means. Addition is combining quantities. So when we have 2 + 2, we are combining two quantities of 2. This gives us 4. Therefore, 2 + 2 = 4.',
-            'ground_truth': '4'
-        },
-        {
-            'prompt': 'What is the capital of France?',
-            'completions': [
-                'The capital of France is Paris. Paris is located in the north-central part of France and is the most populous city in the country.',
-                'France\'s capital city is Paris, which has been the political and cultural center of France for centuries.'
-            ],
-            'ground_truth': 'Paris'
-        }
-    ]
+    # Arguments
+    argparse = argparse.ArgumentParser(description="Truncate MoT dataset completions.")
+    argparse.add_argument("--dataset", type=str, default="data/mot_code_python_filtered_5K")
+    argparse.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-7B-Instruct")
+    argparse.add_argument("--max_n_tokens", type=int, default=20)
+    argparse.add_argument("--final_answer_template", type=str, default="\n\nFinal answer: <answer>")
+    args = argparse.parse_args()
     
     # Truncate to 20 tokens max
-    truncated_data = truncate_data(max_n_tokens=20, 
-                                   dataset=sample_dataset,
-                                   model_name="Qwen/Qwen2.5-7B-Instruct",
-                                   final_answer_template="\n\nFinal answer: <answer>")
+    import ipdb; ipdb.set_trace()
+    truncated_data = truncate_data(max_n_tokens=args.max_n_tokens, 
+                                   dataset=args.dataset, 
+                                   model_name=args.model_name, 
+                                   final_answer_template=args.final_answer_template)
     
     # Print results
     for i, sample in enumerate(truncated_data):
