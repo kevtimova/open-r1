@@ -39,7 +39,7 @@ pad_to_max_length: false
 max_steps: -1
 num_generations: 16
 num_train_epochs: 1
-output_dir: /mnt/ai_researcher_volume_nyc2_1750677290711/data/Qwen2.5-7B-MoT-GRPO-20250623_003621/
+output_dir: data/eval/Qwen2.5-7B-Instruct
 overwrite_output_dir: false
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
