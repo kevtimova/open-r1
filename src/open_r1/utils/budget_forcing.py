@@ -85,7 +85,7 @@ if __name__ == "__main__":
     parser.add_argument("--dataset", type=str, default="data/mot_code_python_filtered_5K")
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-7B-Instruct")
     parser.add_argument("--max_n_tokens", type=int, default=20)
-    parser.add_argument("--final_answer_template", type=str, default="\n\nFinal answer: <answer>")
+    parser.add_argument("--final_answer_template", type=str, default="\n</think>\n<answer>")
     args = parser.parse_args()
     
     # Truncate to specified tokens max
