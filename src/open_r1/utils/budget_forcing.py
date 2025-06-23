@@ -57,7 +57,7 @@ def truncate_data(max_n_tokens,
         ])
 
     # Save new truncated dataset 
-    truncated_dataset = Dataset.filter_mot_data(truncated_dataset)
+    truncated_dataset = Dataset.from_dict(truncated_dataset)
     dataset['test'] = truncated_dataset
     dataset.save_to_disk(f"{dataset}_truncated_{max_n_tokens}_tokens")
 
