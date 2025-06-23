@@ -27,6 +27,7 @@ from open_r1.utils import get_dataset, get_model, get_tokenizer
 from open_r1.utils.callbacks import get_callbacks
 from open_r1.utils.wandb_logging import init_wandb_training
 from trl import GRPOTrainer, ModelConfig, TrlParser, get_peft_config
+from open_r1.grpo import make_conversation
 
 # CUSTOM
 import wandb
@@ -136,15 +137,15 @@ def main(script_args, training_args, model_args):
     # Get reward functions from the registry
     reward_funcs = get_reward_funcs(script_args)
 
-    DEMO = True
+    # DEMO = True
 
-    # Format into conversation
-    def make_conversation(example, prompt_column: str = script_args.dataset_prompt_column):
-        prompt = example[prompt_column][0]
-        # completion = example[prompt_column][1] # noqa
-        if DEMO:
-            prompt['content'] = "... " + prompt['content'][-100:]
-        return {"prompt": [prompt]}
+    # # Format into conversation
+    # def make_conversation(example, prompt_column: str = script_args.dataset_prompt_column):
+    #     prompt = example[prompt_column][0]
+    #     # completion = example[prompt_column][1] # noqa
+    #     if DEMO:
+    #         prompt['content'] = "... " + prompt['content'][-100:]
+    #     return {"prompt": [prompt]}
 
     dataset = dataset.map(make_conversation)
 
