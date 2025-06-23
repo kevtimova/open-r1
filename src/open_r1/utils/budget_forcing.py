@@ -22,7 +22,7 @@ def truncate_data(max_n_tokens,
     tokenizer = AutoTokenizer.from_pretrained(model_name)
 
     # Load the dataset 
-    dataset = load_from_disk(dataset)
+    dataset = load_from_disk(dataset) if isinstance(dataset, str) else dataset
     test_set = dataset['test']
 
     # Generate the truncated dataset    
@@ -59,7 +59,7 @@ def truncate_data(max_n_tokens,
     # Save new truncated dataset 
     truncated_dataset = Dataset.filter_mot_data(truncated_dataset)
     dataset['test'] = truncated_dataset
-    dataset.save_to_disk(f"{dataset}_truncated_{max_n_tokens}_tokens")
+    # dataset.save_to_disk(f"{dataset}_truncated_{max_n_tokens}_tokens")
 
 # Example usage and testing
 if __name__ == "__main__":
