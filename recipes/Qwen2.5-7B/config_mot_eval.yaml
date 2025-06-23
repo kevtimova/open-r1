@@ -15,7 +15,6 @@ system_prompt: "You are a helpful AI Assistant that provides well-reasoned and d
 # GRPO trainer config
 bf16: true
 use_vllm: true
-resume_from_checkpoint: /mnt/ai_researcher_volume_nyc2_1750677290711/data/Qwen2.5-7B-MoT-GRPO-20250623_003621/checkpoint-20
 vllm_gpu_memory_utilization: 0.6
 gradient_accumulation_steps: 16
 gradient_checkpointing: true
@@ -40,8 +39,8 @@ pad_to_max_length: false
 max_steps: -1
 num_generations: 16
 num_train_epochs: 1
-output_dir: data/Qwen2.5-7B-MoT-GRPO
-overwrite_output_dir: true
+output_dir: /mnt/ai_researcher_volume_nyc2_1750677290711/data/Qwen2.5-7B-MoT-GRPO-20250623_003621/
+overwrite_output_dir: false
 per_device_eval_batch_size: 2
 per_device_train_batch_size: 2
 push_to_hub: false
