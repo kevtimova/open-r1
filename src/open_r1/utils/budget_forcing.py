@@ -55,6 +55,8 @@ def truncate_data(max_n_tokens,
             {'role': 'user', 'content': prompt},
             {'role': 'assistant', 'content': truncated_completion}
         ])
+        truncated_dataset['num_tokens'] = dataset['test']['num_tokens']  # Keep the original num_tokens field
+        truncated_dataset['source'] = dataset['test']['source']  # Update num_tokens to max_n_tokens
 
     # Save new truncated dataset 
     truncated_dataset = Dataset.from_dict(truncated_dataset)
