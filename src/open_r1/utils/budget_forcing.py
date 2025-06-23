@@ -74,7 +74,6 @@ if __name__ == "__main__":
     args = argparse.parse_args()
     
     # Truncate to 20 tokens max
-    import ipdb; ipdb.set_trace()
     truncated_data = truncate_data(max_n_tokens=args.max_n_tokens, 
                                    dataset=args.dataset, 
                                    model_name=args.model_name, 
