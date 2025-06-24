@@ -103,9 +103,6 @@ def main(script_args, training_args, model_args):
              # Custom logic for Mixture of Thoughts dataset
             assert example[prompt_column][0]['role'] == 'user'
             prompt.append({"role": "user", "content": example[prompt_column][0]['content']})
-            if "<answer>" in example[prompt_column][1]['content']:
-                # If doing budget forcing, we include the answer in the prompt
-                prompt.append({"role": "assistant", "content": example[prompt_column][1]['content']})
         else:
             prompt.append({"role": "user", "content": example[prompt_column]})
         # Add the code reference to output, if available
