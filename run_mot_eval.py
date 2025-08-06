@@ -9,7 +9,6 @@ TODO: Support two ways of unit tests: 1. Extract from prompt, 2. Download from c
 
 import re
 
-
 def extract_test_cases(prompt: str) -> list[dict]:
     """Extract test cases from the prompt."""
     input_blocks = re.findall(r'```input\s*\n(.*?)\n```', prompt, re.DOTALL)
@@ -55,29 +54,29 @@ import datasets
 import numpy as np # noqa
 from tqdm import tqdm
 from open_r1.rewards import code_reward
+from latent_eval import extract_sketches, generate_solution_strategy, generate_solution
 
 dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
 
-def batch_iterator(batch_size=10, use_type_1_tests=True, use_type_2_tests=False):
+def batch_iterator(batch_size=10,
+                   use_type_1_tests=True,
+                   use_type_2_tests=False,
+                   use_latent_eval=False):
     skipped = collections.Counter()
-    completions, verification_info = [], []
+    completions, verification_info, prompts = [], [], []
+
     for i in range(len(dataset["train"])):
+        # Obtain the training sample
         example = dataset["train"][i]
+        
+        # Extract the prompt.
         prompt = example["messages"][0]["content"]
-        generation = example["messages"][1]["content"]
-        completion = [{"content": generation}]
 
         # Get language.
         language = extract_programming_language(prompt)
         assert language in ("python", "cpp")
         if language != "python":
             skipped["non_python"] += 1
-            continue
-
-        # Make sure we can actually extract code.
-        code_snippet = extract_code(generation, language=language)
-        if code_snippet == "":
-            skipped["no_code_snippet"] += 1
             continue
 
         # Unit Tests Type 1: Extract from prompt.
@@ -95,39 +94,65 @@ def batch_iterator(batch_size=10, use_type_1_tests=True, use_type_2_tests=False)
         # {'test_cases': [{'type': 'stdin_stdout', 'input': '2\n4 1\n5 5 5 5\n3 2\n0 0 0\n', 'output': '10\n0\n'}], 'language': 'python'}
         this_verification_info = {"test_cases": test_cases, "language": language}
 
-        # Add to batch.
-        completions.append(completion)
-        verification_info.append(this_verification_info)
+        # Extract the solution.
+        if use_latent_eval:
+            solution_strategies = generate_solution_strategy(example)
+            sketches = extract_sketches(solution_strategies)
+            for sketch in sketches:
+                # Add solution to batch.
+                generation = generate_solution(prompt, sketch)
+                completion = [{"content": generation}]
+                completions.append(completion)
+                # Add test cases to batch.
+                verification_info.append(this_verification_info)
+                # Add prompt to batch.
+                prompts.append(prompt)
+        else:
+            # Extract the ground truth generation.
+            generation = example["messages"][-1]["content"]
+            # Make sure we can actually extract code.
+            code_snippet = extract_code(generation, language=language)
+            if code_snippet == "":
+                skipped["no_code_snippet"] += 1
+                continue
+            # Add solution to batch.
+            completion = [{"content": generation}]
+            completions.append(completion)
+            # Add test cases to batch.
+            verification_info.append(this_verification_info)
+            # Add prompt to batch.
+            prompts.append(prompt)
 
         if len(completions) >= batch_size:
             print(f"Skipped so far: {skipped}")
-            yield completions, verification_info
-            completions, verification_info = [], []
+            yield completions, verification_info, prompts
+            completions, verification_info, prompts = [], [], []
 
+    # Yield the last batch.
     if len(completions) > 0:
         print(f"Skipped so far: {skipped}")
-        yield completions, verification_info
+        yield completions, verification_info, prompts
 
-# Canary: Does code execution actually work as expected?
-language = "python"
-code_snippet = """
-```python
-def main():
-    user_input = input()
-    values = list(map(int, user_input.split()))
-    print(sum(values))
+# # Canary: Does code execution actually work as expected?
+# language = "python"
+# code_snippet = """
+# ```python
+# def main():
+#     user_input = input()
+#     values = list(map(int, user_input.split()))
+#     print(sum(values))
 
-if __name__ == "__main__":
-    main()
-```
-""".strip()
+# if __name__ == "__main__":
+#     main()
+# ```
+# """.strip()
 
-test_cases = [{"type": "stdin_stdout", "input": "1 2 3\n", "output": "6\n"}, {"type": "stdin_stdout", "input": "1 2 3\n", "output": "5\n"}]
-verification_info = [{"test_cases": [test_cases[0]], "language": language}, {"test_cases": [test_cases[1]], "language": language}]
-rewards = code_reward([[{"content": code_snippet}], [{"content": code_snippet}]], provider_type="morph", verification_info=verification_info)
-expected_rewards = [1.0, 0.0]
-assert rewards == expected_rewards, f"Rewards: {rewards} != Expected rewards: {expected_rewards}"
-print("Canary passed.")
+# test_cases = [{"type": "stdin_stdout", "input": "1 2 3\n", "output": "6\n"}, {"type": "stdin_stdout", "input": "1 2 3\n", "output": "5\n"}]
+# verification_info = [{"test_cases": [test_cases[0]], "language": language}, {"test_cases": [test_cases[1]], "language": language}]
+# rewards = code_reward([[{"content": code_snippet}], [{"content": code_snippet}]], provider_type="morph", verification_info=verification_info)
+# expected_rewards = [1.0, 0.0]
+# assert rewards == expected_rewards, f"Rewards: {rewards} != Expected rewards: {expected_rewards}"
+# print("Canary passed.")
 
 # Evaluation: Evaluate the MoT data.
 # TODO: Add batching.
@@ -135,10 +160,18 @@ print("Canary passed.")
 batch_size = 10
 num_batches = len(dataset["train"]) // batch_size
 results = []
-for completions, verification_info in tqdm(batch_iterator(batch_size), total=num_batches):
+grouped = collections.defaultdict(list)
+use_latent = False
+for completions, verification_info, prompts in tqdm(batch_iterator(batch_size, use_latent_eval=use_latent), total=num_batches):
     rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
     print(rewards)
     results.extend(rewards)
+    # Combine rewards by prompt.
+    for prompt, completion, reward in zip(prompts, completions, rewards):
+        grouped[prompt].append({"completion": completion, "reward": reward})
+    json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
+    with open(f"results_{int(use_latent)}.json", "w") as f:
+        json.dump(json_data, f)
 
 results = np.array(results)
 print(results.mean())
