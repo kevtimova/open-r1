@@ -55,6 +55,7 @@ import numpy as np # noqa
 from tqdm import tqdm
 from open_r1.rewards import code_reward
 from latent_eval import extract_sketches, generate_solution_strategy, generate_solution
+import argparse
 
 dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
 
@@ -148,48 +149,56 @@ def batch_iterator(batch_size=10,
         yield completions, verification_info, prompts
 
 # # Canary: Does code execution actually work as expected?
-# language = "python"
-# code_snippet = """
-# ```python
-# def main():
-#     user_input = input()
-#     values = list(map(int, user_input.split()))
-#     print(sum(values))
+    # language = "python"
+    # code_snippet = """
+    # ```python
+    # def main():
+    #     user_input = input()
+    #     values = list(map(int, user_input.split()))
+    #     print(sum(values))
 
-# if __name__ == "__main__":
-#     main()
-# ```
-# """.strip()
+    # if __name__ == "__main__":
+    #     main()
+    # ```
+    # """.strip()
 
-# test_cases = [{"type": "stdin_stdout", "input": "1 2 3\n", "output": "6\n"}, {"type": "stdin_stdout", "input": "1 2 3\n", "output": "5\n"}]
-# verification_info = [{"test_cases": [test_cases[0]], "language": language}, {"test_cases": [test_cases[1]], "language": language}]
-# rewards = code_reward([[{"content": code_snippet}], [{"content": code_snippet}]], provider_type="morph", verification_info=verification_info)
-# expected_rewards = [1.0, 0.0]
-# assert rewards == expected_rewards, f"Rewards: {rewards} != Expected rewards: {expected_rewards}"
-# print("Canary passed.")
+    # test_cases = [{"type": "stdin_stdout", "input": "1 2 3\n", "output": "6\n"}, {"type": "stdin_stdout", "input": "1 2 3\n", "output": "5\n"}]
+    # verification_info = [{"test_cases": [test_cases[0]], "language": language}, {"test_cases": [test_cases[1]], "language": language}]
+    # rewards = code_reward([[{"content": code_snippet}], [{"content": code_snippet}]], provider_type="morph", verification_info=verification_info)
+    # expected_rewards = [1.0, 0.0]
+    # assert rewards == expected_rewards, f"Rewards: {rewards} != Expected rewards: {expected_rewards}"
+    # print("Canary passed.")
 
-# Evaluation: Evaluate the MoT data.
-# TODO: Add batching.
-# TODO: Add patch code?
-batch_size = 10
-num_batches = len(dataset["train"]) // batch_size
-results = []
-grouped = collections.defaultdict(list)
-strategy = "use_latent"
-for completions, verification_info, prompts in tqdm(batch_iterator(batch_size, solution_strategy=strategy), total=num_batches):
-    rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
-    print(rewards)
-    results.extend(rewards)
-    # Combine rewards by prompt.
-    for prompt, completion, reward in zip(prompts, completions, rewards):
-        grouped[prompt].append({"completion": completion, "reward": reward})
-    json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
-    with open(f"results_{strategy}.json", "w") as f:
-        json.dump(json_data, f)
+if __name__ == "__main__":
 
-results = np.array(results)
-print(results.mean())
-print(results.std())
-print(results.min())
-print(results.max())
+    # Arguments
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--batch_size", type=int, default=10)
+    parser.add_argument("--solution_strategy", type=str, default="use_latent")
+    parser.add_argument("--num_solutions", type=int, default=4)
+    args = parser.parse_args()
+
+    # Evaluation: Evaluate the MoT data.
+    # TODO: Add batching.
+    # TODO: Add patch code?
+    num_batches = len(dataset["train"]) // args.batch_size
+    results = []
+    grouped = collections.defaultdict(list)
+    for completions, verification_info, prompts in tqdm(batch_iterator(args.batch_size, solution_strategy=args.solution_strategy, num_solutions=args.num_solutions), total=num_batches):
+        # Evaluate the completions.
+        rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
+        print(rewards)
+        results.extend(rewards)
+        # Combine rewards by prompt.
+        for prompt, completion, reward in zip(prompts, completions, rewards):
+            grouped[prompt].append({"completion": completion, "reward": reward})
+        json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
+        with open(f"results_{args.solution_strategy}.json", "w") as f:
+            json.dump(json_data, f)
+
+    results = np.array(results)
+    print(results.mean())
+    print(results.std())
+    print(results.min())
+    print(results.max())
 
