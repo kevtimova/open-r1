@@ -61,12 +61,13 @@ dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
 def batch_iterator(batch_size=10,
                    use_type_1_tests=True,
                    use_type_2_tests=False,
-                   use_latent_eval=False):
+                   solution_strategy='ground_truth',
+                   num_solutions=4):
     skipped = collections.Counter()
     completions, verification_info, prompts = [], [], []
 
     for i in range(len(dataset["train"])):
-        # Obtain the training sample
+        # Obtain the training sample.
         example = dataset["train"][i]
         
         # Extract the prompt.
@@ -77,6 +78,13 @@ def batch_iterator(batch_size=10,
         assert language in ("python", "cpp")
         if language != "python":
             skipped["non_python"] += 1
+            continue
+
+        # Extract the ground truth generation and make sure it's a valid code snippet.
+        ground_truth_generation = example["messages"][-1]["content"]
+        code_snippet = extract_code(ground_truth_generation, language=language)
+        if code_snippet == "":
+            skipped["no_code_snippet"] += 1
             continue
 
         # Unit Tests Type 1: Extract from prompt.
@@ -94,9 +102,9 @@ def batch_iterator(batch_size=10,
         # {'test_cases': [{'type': 'stdin_stdout', 'input': '2\n4 1\n5 5 5 5\n3 2\n0 0 0\n', 'output': '10\n0\n'}], 'language': 'python'}
         this_verification_info = {"test_cases": test_cases, "language": language}
 
-        # Extract the solution.
-        if use_latent_eval:
-            solution_strategies = generate_solution_strategy(example)
+        # Extract the solution for a valid sample.
+        if solution_strategy == 'use_latent':
+            solution_strategies = generate_solution_strategy(example, num_sketches=num_solutions)
             sketches = extract_sketches(solution_strategies)
             for sketch in sketches:
                 # Add solution to batch.
@@ -107,22 +115,28 @@ def batch_iterator(batch_size=10,
                 verification_info.append(this_verification_info)
                 # Add prompt to batch.
                 prompts.append(prompt)
-        else:
-            # Extract the ground truth generation.
-            generation = example["messages"][-1]["content"]
-            # Make sure we can actually extract code.
-            code_snippet = extract_code(generation, language=language)
-            if code_snippet == "":
-                skipped["no_code_snippet"] += 1
-                continue
+        elif solution_strategy == 'no_latent':
+            for i in range(num_solutions):
+                # Add solution to batch.
+                generation = generate_solution(prompt)
+                completion = [{"content": generation}]
+                completions.append(completion)
+                # Add test cases to batch.
+                verification_info.append(this_verification_info)
+                # Add prompt to batch.
+                prompts.append(prompt)
+        elif solution_strategy == 'ground_truth':
             # Add solution to batch.
-            completion = [{"content": generation}]
+            completion = [{"content": ground_truth_generation}]
             completions.append(completion)
             # Add test cases to batch.
             verification_info.append(this_verification_info)
             # Add prompt to batch.
             prompts.append(prompt)
+        else:
+            raise ValueError(f"Unknown solution strategy: {solution_strategy}")
 
+        # Yield the batch if it's full. 
         if len(completions) >= batch_size:
             print(f"Skipped so far: {skipped}")
             yield completions, verification_info, prompts
@@ -161,8 +175,8 @@ batch_size = 10
 num_batches = len(dataset["train"]) // batch_size
 results = []
 grouped = collections.defaultdict(list)
-use_latent = False
-for completions, verification_info, prompts in tqdm(batch_iterator(batch_size, use_latent_eval=use_latent), total=num_batches):
+strategy = "use_latent"
+for completions, verification_info, prompts in tqdm(batch_iterator(batch_size, solution_strategy=strategy), total=num_batches):
     rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
     print(rewards)
     results.extend(rewards)
@@ -170,7 +184,7 @@ for completions, verification_info, prompts in tqdm(batch_iterator(batch_size, u
     for prompt, completion, reward in zip(prompts, completions, rewards):
         grouped[prompt].append({"completion": completion, "reward": reward})
     json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
-    with open(f"results_{int(use_latent)}.json", "w") as f:
+    with open(f"results_{strategy}.json", "w") as f:
         json.dump(json_data, f)
 
 results = np.array(results)

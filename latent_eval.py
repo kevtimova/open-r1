@@ -103,7 +103,7 @@ def extract_sketches(content):
     matches = re.findall(r"<sketch>(.*?)</sketch>", content, re.DOTALL)
     return matches
 
-def generate_solution(prompt, sketch, api_provider="digitalocean", num_retries=5):
+def generate_solution(prompt, sketch=None, api_provider="digitalocean", num_retries=5):
     """
     Generate a solution based on the prompt and sketch.
     """
@@ -115,11 +115,13 @@ def generate_solution(prompt, sketch, api_provider="digitalocean", num_retries=5
             "Authorization": f"Bearer {MODEL_ACCESS_KEY}",
             "Content-Type": "application/json"
         }
-        propt_with_sketch = f"{prompt}\n\nSketch solution: {sketch}"
+        if sketch is not None:
+            prompt = f"{prompt}\n\nSketch solution: {sketch}"
+
         payload = {
             "model": "llama3.3-70b-instruct",
             "messages": [
-                {"role": "user", "content": propt_with_sketch}
+                {"role": "user", "content": prompt}
             ],
             "temperature": 0.7,
             "max_tokens": 10000
