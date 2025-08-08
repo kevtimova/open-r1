@@ -56,6 +56,7 @@ from tqdm import tqdm
 from open_r1.rewards import code_reward
 from latent_eval import extract_sketches, generate_solution_strategy, generate_solution
 import argparse
+import time
 
 dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
 
@@ -73,6 +74,7 @@ def batch_iterator(batch_size=10,
         
         # Extract the prompt.
         prompt = example["messages"][0]["content"]
+        prompt += """\n\n Think before you write your code. Remember to use a single code block to write your final solution."""
 
         # Get language.
         language = extract_programming_language(prompt)
@@ -142,6 +144,7 @@ def batch_iterator(batch_size=10,
             print(f"Skipped so far: {skipped}")
             yield completions, verification_info, prompts
             completions, verification_info, prompts = [], [], []
+            break
 
     # Yield the last batch.
     if len(completions) > 0:
@@ -193,7 +196,8 @@ if __name__ == "__main__":
         for prompt, completion, reward in zip(prompts, completions, rewards):
             grouped[prompt].append({"completion": completion, "reward": reward})
         json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
-        with open(f"results_{args.solution_strategy}.json", "w") as f:
+        output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{int(time.time())}.json"
+        with open(output_path, "w") as f:
             json.dump(json_data, f)
 
     results = np.array(results)
