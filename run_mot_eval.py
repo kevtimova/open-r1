@@ -57,6 +57,7 @@ from open_r1.rewards import code_reward
 from latent_eval import extract_sketches, generate_solution_strategy, generate_solution
 import argparse
 import time
+from datetime import datetime
 
 dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
 
@@ -67,6 +68,7 @@ def batch_iterator(batch_size=10,
                    num_solutions=4):
     skipped = collections.Counter()
     completions, verification_info, prompts = [], [], []
+    total_batches = 0
 
     for i in range(len(dataset["train"])):
         # Obtain the training sample.
@@ -106,12 +108,22 @@ def batch_iterator(batch_size=10,
         this_verification_info = {"test_cases": test_cases, "language": language}
 
         # Extract the solution for a valid sample.
-        if solution_strategy == 'use_latent':
+        if solution_strategy == 'latent_sketch':
             solution_strategies = generate_solution_strategy(example, num_sketches=num_solutions)
             sketches = extract_sketches(solution_strategies)
             for sketch in sketches:
                 # Add solution to batch.
                 generation = generate_solution(prompt, sketch)
+                completion = [{"content": generation}]
+                completions.append(completion)
+                # Add test cases to batch.
+                verification_info.append(this_verification_info)
+                # Add prompt to batch.
+                prompts.append(prompt)
+        elif solution_strategy == 'latent_pick':
+            for i in range(num_solutions):
+                # Add solution to batch.
+                generation = generate_solution(prompt, sketch=None, pick_strategy=True)
                 completion = [{"content": generation}]
                 completions.append(completion)
                 # Add test cases to batch.
@@ -141,13 +153,16 @@ def batch_iterator(batch_size=10,
 
         # Yield the batch if it's full. 
         if len(completions) >= batch_size:
+            total_batches += 1
             print(f"Skipped so far: {skipped}")
             yield completions, verification_info, prompts
             completions, verification_info, prompts = [], [], []
+        if total_batches >= 4:
             break
 
     # Yield the last batch.
     if len(completions) > 0:
+        total_batches += 1
         print(f"Skipped so far: {skipped}")
         yield completions, verification_info, prompts
 
@@ -177,7 +192,7 @@ if __name__ == "__main__":
     # Arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_size", type=int, default=10)
-    parser.add_argument("--solution_strategy", type=str, default="use_latent")
+    parser.add_argument("--solution_strategy", type=str, default="latent_sketch")
     parser.add_argument("--num_solutions", type=int, default=4)
     args = parser.parse_args()
 
@@ -195,10 +210,13 @@ if __name__ == "__main__":
         # Combine rewards by prompt.
         for prompt, completion, reward in zip(prompts, completions, rewards):
             grouped[prompt].append({"completion": completion, "reward": reward})
-        json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
-        output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{int(time.time())}.json"
-        with open(output_path, "w") as f:
-            json.dump(json_data, f)
+    
+    # Save results to JSON file
+    json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
+    timestamp = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M")
+    output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{timestamp}.json"
+    with open(output_path, "w") as f:
+        json.dump(json_data, f)
 
     results = np.array(results)
     print(results.mean())

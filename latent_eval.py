@@ -10,6 +10,9 @@ import re
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# List of solution strategies
+solution_strategies = """Dijkstra’s Algorithm, Bellman–Ford Algorithm, Floyd–Warshall Algorithm, A* Search Algorithm, Kruskal’s Algorithm, Prim’s Algorithm, Tarjan’s Algorithm, Kosaraju’s Algorithm, Union-Find, Disjoint Set Union, Union by Rank, Path Compression, Graph Traversal DFS, Graph Traversal BFS, Topological Sorting, Flood Fill, Heavy-Light Decomposition, Lowest Common Ancestor Binary Lifting, Huffman Coding, Fractional Knapsack, Coin Change, Job Sequencing with Deadlines, Egyptian Fraction Representation, Interval Scheduling, Merge Sort, Quick Sort, Heap Sort, Counting Sort, Radix Sort, Binary Search, Binary Search on Answer, Meet in the Middle, Knuth Optimization, Divide and Conquer DP Optimization, Bitmask Dynamic Programming, Segment Tree, Fenwick Tree, Binary Indexed Tree, Trie, Knuth–Morris–Pratt Algorithm, Rabin–Karp Algorithm, Z-function, Suffix Arrays, Manacher’s Algorithm, Convex Hull Graham Scan, Convex Hull Andrew’s Monotone Chain, Sweep Line Algorithm, Line Sweep for Geometry Problems, GCD, Modular Arithmetic, Prime Factorization, Fast Fourier Transform, Coordinate Compression, Mo’s Algorithm, Brute Force, Sliding Window, Two Pointers"""
+
 # Generate solution strategy for each example
 def generate_solution_strategy(example, api_provider="digitalocean", num_sketches=4, num_retries=5):
     problem = example["messages"][0]["content"]
@@ -103,7 +106,11 @@ def extract_sketches(content):
     matches = re.findall(r"<sketch>(.*?)</sketch>", content, re.DOTALL)
     return matches
 
-def generate_solution(prompt, sketch=None, api_provider="digitalocean", num_retries=5):
+def generate_solution(prompt, 
+                      sketch=None, 
+                      api_provider="digitalocean", 
+                      pick_strategy=False,
+                      num_retries=5):
     """
     Generate a solution based on the prompt and sketch.
     """
@@ -116,7 +123,9 @@ def generate_solution(prompt, sketch=None, api_provider="digitalocean", num_retr
             "Content-Type": "application/json"
         }
         if sketch is not None:
-            prompt = f"{prompt}\n\nSketch solution: {sketch}"
+            prompt = f"{prompt}\n\nUse the following sketch solution to generate a full solution: {sketch}. Think before you write your code."
+        if pick_strategy:
+            prompt = f"{prompt}\n\nUse one of the following techniques to generate your solution: {solution_strategies}. Indicate which technique you picked using <technique_name>...</technique_name> format. Think before you write your code."
 
         payload = {
             "model": "llama3.3-70b-instruct",
@@ -168,5 +177,4 @@ if __name__ == "__main__":
 
         for sketch in sketches:
             # Generate a solution based on the sketch
-            import ipdb; ipdb.set_trace()
             solution = generate_solution(prompt, sketch)
