@@ -114,6 +114,31 @@ def generate_solution(prompt,
     """
     Generate a solution based on the prompt and sketch.
     """
+    if sketch is not None:
+        prompt = f"{prompt}\n\nUse the following sketch solution to generate a full solution: {sketch}. Think before you write your code."
+    if pick_strategy:
+        prompt = f"Use one of the following techniques to generate your solution to the problem below: {solution_strategies}. Indicate which technique you picked using <technique_name>...</technique_name> format.\n\n{prompt}"
+
+    if api_provider.lower() == "openai":
+        # Generate response from OpenAI
+        response = None
+        for i in range(num_retries):
+            try:
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[{"role": "user", "content": prompt}],
+                )
+                break
+            except openai.RateLimitError as e:
+                print(f"Rate limit error: {e}")
+                if i < num_retries - 1:  # Don't sleep on the last attempt
+                    sleep_time = 10 * (2 ** i)  # Exponential backoff
+                    print(f"Retrying in {sleep_time} seconds...")
+                    time.sleep(sleep_time)
+        if response is None:
+            raise RuntimeError(f"Failed to get a response after {num_retries} retries.")
+        content = response.choices[0].message.content
+
     if api_provider.lower() == "digitalocean":
         # Generate response from DigitalOcean
         MODEL_ACCESS_KEY = os.getenv("DIGITALOCEAN_API_KEY")
@@ -122,13 +147,10 @@ def generate_solution(prompt,
             "Authorization": f"Bearer {MODEL_ACCESS_KEY}",
             "Content-Type": "application/json"
         }
-        if sketch is not None:
-            prompt = f"{prompt}\n\nUse the following sketch solution to generate a full solution: {sketch}. Think before you write your code."
-        if pick_strategy:
-            prompt = f"{prompt}\n\nUse one of the following techniques to generate your solution: {solution_strategies}. Indicate which technique you picked using <technique_name>...</technique_name> format. Think before you write your code."
 
         payload = {
             "model": "llama3.3-70b-instruct",
+            # "model": "DeepSeek-R1-distill-llama-70B",
             "messages": [
                 {"role": "user", "content": prompt}
             ],
@@ -159,7 +181,7 @@ def generate_solution(prompt,
         
         if response is None or response.status_code != 200:
             raise RuntimeError(f"Failed to get a successful response from DigitalOcean API after {num_retries} retries.")
-        return content
+    return content
 
 if __name__ == "__main__":
     # Load the dataset
