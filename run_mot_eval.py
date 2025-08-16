@@ -76,7 +76,6 @@ def batch_iterator(batch_size=10,
         
         # Extract the prompt.
         prompt = example["messages"][0]["content"]
-        prompt += """\n\n Think before you write your code. Remember to use a single code block to write your final solution."""
 
         # Get language.
         language = extract_programming_language(prompt)
