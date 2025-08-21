@@ -6,6 +6,7 @@ import os
 import requests
 import json
 import re
+import random
 
 # Initialize OpenAI client
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -109,15 +110,69 @@ def extract_sketches(content):
 def generate_solution(prompt, 
                       sketch=None, 
                       api_provider="digitalocean", 
-                      pick_strategy=False,
+                      pick_strategy="choose_best_fit",
                       num_retries=5):
     """
     Generate a solution based on the prompt and sketch.
     """
     if sketch is not None:
         prompt = f"{prompt}\n\nUse the following sketch solution to generate a full solution: {sketch}. Think before you write your code."
-    if pick_strategy:
-        prompt = f"Use one of the following techniques to generate your solution to the problem below: {solution_strategies}. Indicate which technique you picked using <technique_name>...</technique_name> format.\n\n{prompt}"
+    elif pick_strategy == "choose_best_fit":
+        prompt = f"""
+Step 1: FIRST line must be JSON:
+{{"technique":"Greedy"}}
+
+Step 2: SECOND line must be an XML tag that repeats EXACTLY the same value:
+<technique_name>Greedy</technique_name>
+
+Important:
+- The string inside <technique_name>…</technique_name> must be IDENTICAL to the "technique" field in the JSON.
+- Do NOT invent your own tag name (<Greedy>…</Greedy>).
+- Do NOT write "ChosenAlgorithm" literally (<technique_name>ChosenAlgorithm</technique_name>).
+- Do NOT change spacing or casing (<technique_name>Greedy Algorithm</technique_name>).
+
+Correct example:
+{{"technique":"BinarySearchOnAnswer"}}
+<technique_name>BinarySearchOnAnswer</technique_name>
+
+Incorrect example:
+{{"technique":"Greedy"}}
+<Greedy>ChosenAlgorithm</Greedy>
+
+{prompt}
+
+Remember to specify the chosen technique for your solution in the format: <technique_name>ChosenAlgorithm</technique_name>. 
+"""
+    elif pick_strategy == "choose_randomly_from_list":
+        techniques_list = ['DynamicProgramming', 'BruteForce', 'PrefixSum', 'Greedy', 'Hashing']
+        chosen_technique = random.choice(techniques_list)
+        prompt = f"""
+Step 1: FIRST line must be JSON:
+{{"technique":"Greedy"}}
+
+Step 2: SECOND line must be an XML tag that repeats EXACTLY the same value:
+<technique_name>Greedy</technique_name>
+
+Important:
+- The string inside <technique_name>…</technique_name> must be IDENTICAL to the "technique" field in the JSON.
+- Do NOT invent your own tag name (<Greedy>…</Greedy>).
+- Do NOT write "ChosenAlgorithm" literally (<technique_name>ChosenAlgorithm</technique_name>).
+- Do NOT change spacing or casing (<technique_name>Greedy Algorithm</technique_name>).
+
+Correct example:
+{{"technique":"BinarySearchOnAnswer"}}
+<technique_name>BinarySearchOnAnswer</technique_name>
+
+Incorrect example:
+{{"technique":"Greedy"}}
+<Greedy>ChosenAlgorithm</Greedy>
+
+For this problem it has been preselected to use technique {chosen_technique}. Use {chosen_technique} and proceed normally. Still mention technique {chosen_technique} within the expected format.
+
+{prompt}
+
+Remember to specify the chosen technique for your solution in the format: <technique_name>ChosenAlgorithm</technique_name>. 
+"""
 
     if api_provider.lower() == "openai":
         # Generate response from OpenAI
