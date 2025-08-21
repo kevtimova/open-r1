@@ -65,6 +65,7 @@ def batch_iterator(batch_size=10,
                    use_type_1_tests=True,
                    use_type_2_tests=False,
                    solution_strategy='ground_truth',
+                   provider="digitalocean",
                    num_solutions=4):
     skipped = collections.Counter()
     completions, verification_info, prompts = [], [], []
@@ -112,7 +113,7 @@ def batch_iterator(batch_size=10,
             sketches = extract_sketches(solution_strategies)
             for sketch in sketches:
                 # Add solution to batch.
-                generation = generate_solution(prompt, sketch)
+                generation = generate_solution(prompt, sketch, provider)
                 completion = [{"content": generation}]
                 completions.append(completion)
                 # Add test cases to batch.
@@ -122,7 +123,7 @@ def batch_iterator(batch_size=10,
         elif solution_strategy == 'latent_pick':
             for i in range(num_solutions):
                 # Add solution to batch.
-                generation = generate_solution(prompt, sketch=None, pick_strategy=True)
+                generation = generate_solution(prompt, sketch=None, api_provider=provider, pick_strategy=True)
                 completion = [{"content": generation}]
                 completions.append(completion)
                 # Add test cases to batch.
@@ -132,7 +133,7 @@ def batch_iterator(batch_size=10,
         elif solution_strategy == 'no_latent':
             for i in range(num_solutions):
                 # Add solution to batch.
-                generation = generate_solution(prompt)
+                generation = generate_solution(prompt, api_provider=provider)
                 completion = [{"content": generation}]
                 completions.append(completion)
                 # Add test cases to batch.
@@ -193,6 +194,7 @@ if __name__ == "__main__":
     parser.add_argument("--batch_size", type=int, default=10)
     parser.add_argument("--solution_strategy", type=str, default="latent_sketch")
     parser.add_argument("--num_solutions", type=int, default=4)
+    parser.add_argument("--provider", type=str, default="digitalocean", choices=["openai", "digitalocean"])
     args = parser.parse_args()
 
     # Evaluation: Evaluate the MoT data.
@@ -201,7 +203,7 @@ if __name__ == "__main__":
     num_batches = len(dataset["train"]) // args.batch_size
     results = []
     grouped = collections.defaultdict(list)
-    for completions, verification_info, prompts in tqdm(batch_iterator(args.batch_size, solution_strategy=args.solution_strategy, num_solutions=args.num_solutions), total=num_batches):
+    for completions, verification_info, prompts in tqdm(batch_iterator(args.batch_size, solution_strategy=args.solution_strategy, provider=args.provider, num_solutions=args.num_solutions), total=num_batches):
         # Evaluate the completions.
         rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
         print(rewards)
