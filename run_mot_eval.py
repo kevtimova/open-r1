@@ -120,10 +120,10 @@ def batch_iterator(batch_size=10,
                 verification_info.append(this_verification_info)
                 # Add prompt to batch.
                 prompts.append(prompt)
-        elif solution_strategy == 'latent_pick':
+        elif 'choose' in solution_strategy:
             for i in range(num_solutions):
                 # Add solution to batch.
-                generation = generate_solution(prompt, sketch=None, api_provider=provider, pick_strategy=True)
+                generation = generate_solution(prompt, sketch=None, api_provider=provider, pick_strategy=solution_strategy)
                 completion = [{"content": generation}]
                 completions.append(completion)
                 # Add test cases to batch.
