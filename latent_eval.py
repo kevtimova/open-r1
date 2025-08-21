@@ -120,24 +120,24 @@ def generate_solution(prompt,
     elif pick_strategy == "choose_best_fit":
         prompt = f"""
 Step 1: FIRST line must be JSON:
-{{"technique":"Greedy"}}
+{{"technique":"BruteForce"}}
 
 Step 2: SECOND line must be an XML tag that repeats EXACTLY the same value:
-<technique_name>Greedy</technique_name>
+<technique_name>BruteForce</technique_name>
 
 Important:
 - The string inside <technique_name>…</technique_name> must be IDENTICAL to the "technique" field in the JSON.
-- Do NOT invent your own tag name (<Greedy>…</Greedy>).
+- Do NOT invent your own tag name (<BruteForce>…</BruteForce>).
 - Do NOT write "ChosenAlgorithm" literally (<technique_name>ChosenAlgorithm</technique_name>).
-- Do NOT change spacing or casing (<technique_name>Greedy Algorithm</technique_name>).
+- Do NOT change spacing or casing (<technique_name>Brute Force</technique_name>).
 
 Correct example:
-{{"technique":"BinarySearchOnAnswer"}}
-<technique_name>BinarySearchOnAnswer</technique_name>
+{{"technique":"BruteForce"}}
+<technique_name>BruteForce</technique_name>
 
 Incorrect example:
-{{"technique":"Greedy"}}
-<Greedy>ChosenAlgorithm</Greedy>
+{{"technique":"BruteForce"}}
+<BruteForce>ChosenAlgorithm</BruteForce>
 
 {prompt}
 
@@ -148,24 +148,24 @@ Remember to specify the chosen technique for your solution in the format: <techn
         chosen_technique = random.choice(techniques_list)
         prompt = f"""
 Step 1: FIRST line must be JSON:
-{{"technique":"Greedy"}}
+{{"technique":"BruteForce"}}
 
 Step 2: SECOND line must be an XML tag that repeats EXACTLY the same value:
-<technique_name>Greedy</technique_name>
+<technique_name>BruteForce</technique_name>
 
 Important:
 - The string inside <technique_name>…</technique_name> must be IDENTICAL to the "technique" field in the JSON.
-- Do NOT invent your own tag name (<Greedy>…</Greedy>).
+- Do NOT invent your own tag name (<BruteForce>…</BruteForce>).
 - Do NOT write "ChosenAlgorithm" literally (<technique_name>ChosenAlgorithm</technique_name>).
-- Do NOT change spacing or casing (<technique_name>Greedy Algorithm</technique_name>).
+- Do NOT change spacing or casing (<technique_name>Brute Force</technique_name>).
 
 Correct example:
-{{"technique":"BinarySearchOnAnswer"}}
-<technique_name>BinarySearchOnAnswer</technique_name>
+{{"technique":"BruteForce"}}
+<technique_name>BruteForce</technique_name>
 
 Incorrect example:
-{{"technique":"Greedy"}}
-<Greedy>ChosenAlgorithm</Greedy>
+{{"technique":"BruteForce"}}
+<BruteForce>ChosenAlgorithm</BruteForce>
 
 For this problem it has been preselected to use technique {chosen_technique}. Use {chosen_technique} and proceed normally. Still mention technique {chosen_technique} within the expected format.
 
