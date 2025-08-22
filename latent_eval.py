@@ -115,57 +115,68 @@ def generate_solution(prompt,
     """
     Generate a solution based on the prompt and sketch.
     """
+    techniques_list = ['DynamicProgramming', 'BruteForce', 'PrefixSum', 'Greedy', 'Hashing', 'TwoPointers', 'GraphTraversal', 'SegmentedArray', 'BinarySearch']
     if sketch is not None:
         prompt = f"{prompt}\n\nUse the following sketch solution to generate a full solution: {sketch}. Think before you write your code."
     elif pick_strategy == "choose_best_fit":
+        random_technique = random.choice(techniques_list)
+        parts = re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', random_technique)
+        if len(parts) == 1:
+            joined = random_technique.upper()
+        else:
+            joined = ' '.join(parts)
         prompt = f"""
 Step 1: FIRST line must be JSON:
-{{"technique":"BruteForce"}}
+{{"technique":"{random_technique}"}}
 
 Step 2: SECOND line must be an XML tag that repeats EXACTLY the same value:
-<technique_name>BruteForce</technique_name>
+<technique_name>{random_technique}</technique_name>
 
 Important:
 - The string inside <technique_name>…</technique_name> must be IDENTICAL to the "technique" field in the JSON.
-- Do NOT invent your own tag name (<BruteForce>…</BruteForce>).
+- Do NOT invent your own tag name (<{random_technique}>…</{random_technique}>).
 - Do NOT write "ChosenAlgorithm" literally (<technique_name>ChosenAlgorithm</technique_name>).
-- Do NOT change spacing or casing (<technique_name>Brute Force</technique_name>).
+- Do NOT change spacing or casing (<technique_name>{joined}</technique_name>).
 
 Correct example:
-{{"technique":"BruteForce"}}
-<technique_name>BruteForce</technique_name>
+{{"technique":"{random_technique}"}}
+<technique_name>{random_technique}</technique_name>
 
 Incorrect example:
-{{"technique":"BruteForce"}}
-<BruteForce>ChosenAlgorithm</BruteForce>
+{{"technique":"{random_technique}"}}
+<{random_technique}>ChosenAlgorithm</{random_technique}>
 
 {prompt}
 
 Remember to specify the chosen technique for your solution in the format: <technique_name>ChosenAlgorithm</technique_name>. 
 """
     elif pick_strategy == "choose_randomly_from_list":
-        techniques_list = ['DynamicProgramming', 'BruteForce', 'PrefixSum', 'Greedy', 'Hashing']
-        chosen_technique = random.choice(techniques_list)
+        random_technique, chosen_technique = random.sample(techniques_list, 2)
+        parts = re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', random_technique)
+        if len(parts) == 1:
+            joined = random_technique.upper()
+        else:
+            joined = ' '.join(parts)
         prompt = f"""
 Step 1: FIRST line must be JSON:
-{{"technique":"BruteForce"}}
+{{"technique":"{random_technique}"}}
 
 Step 2: SECOND line must be an XML tag that repeats EXACTLY the same value:
-<technique_name>BruteForce</technique_name>
+<technique_name>{random_technique}</technique_name>
 
 Important:
 - The string inside <technique_name>…</technique_name> must be IDENTICAL to the "technique" field in the JSON.
-- Do NOT invent your own tag name (<BruteForce>…</BruteForce>).
+- Do NOT invent your own tag name (<{random_technique}>…</{random_technique}>).
 - Do NOT write "ChosenAlgorithm" literally (<technique_name>ChosenAlgorithm</technique_name>).
-- Do NOT change spacing or casing (<technique_name>Brute Force</technique_name>).
+- Do NOT change spacing or casing (<technique_name>{joined}</technique_name>).
 
 Correct example:
-{{"technique":"BruteForce"}}
-<technique_name>BruteForce</technique_name>
+{{"technique":"{random_technique}"}}
+<technique_name>{random_technique}</technique_name>
 
 Incorrect example:
-{{"technique":"BruteForce"}}
-<BruteForce>ChosenAlgorithm</BruteForce>
+{{"technique":"{random_technique}"}}
+<{random_technique}>ChosenAlgorithm</{random_technique}>
 
 For this problem it has been preselected to use technique {chosen_technique}. Use {chosen_technique} and proceed normally. Still mention technique {chosen_technique} within the expected format.
 
@@ -173,7 +184,7 @@ For this problem it has been preselected to use technique {chosen_technique}. Us
 
 Remember to specify the chosen technique for your solution in the format: <technique_name>ChosenAlgorithm</technique_name>. 
 """
-
+    # Get a response from OpenAI API
     if api_provider.lower() == "openai":
         # Generate response from OpenAI
         response = None
@@ -194,6 +205,7 @@ Remember to specify the chosen technique for your solution in the format: <techn
             raise RuntimeError(f"Failed to get a response after {num_retries} retries.")
         content = response.choices[0].message.content
 
+    # Get a response from DigitalOcean
     if api_provider.lower() == "digitalocean":
         # Generate response from DigitalOcean
         MODEL_ACCESS_KEY = os.getenv("DIGITALOCEAN_API_KEY")
