@@ -115,7 +115,7 @@ def generate_solution(prompt,
     """
     Generate a solution based on the prompt and sketch.
     """
-    techniques_list = ['DynamicProgramming', 'BruteForce', 'PrefixSum', 'Greedy', 'Hashing', 'TwoPointers', 'GraphTraversal', 'SegmentedArray', 'BinarySearch']
+    techniques_list = ['DynamicProgramming', 'BruteForce', 'PrefixSum', 'Greedy', 'Hashing']
     if sketch is not None:
         prompt = f"{prompt}\n\nUse the following sketch solution to generate a full solution: {sketch}. Think before you write your code."
     elif pick_strategy == "choose_best_fit":
