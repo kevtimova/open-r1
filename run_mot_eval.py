@@ -157,8 +157,6 @@ def batch_iterator(batch_size=10,
             print(f"Skipped so far: {skipped}")
             yield completions, verification_info, prompts
             completions, verification_info, prompts = [], [], []
-        if total_batches >= 4:
-            break
 
     # Yield the last batch.
     if len(completions) > 0:
