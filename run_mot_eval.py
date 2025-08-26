@@ -201,6 +201,7 @@ if __name__ == "__main__":
     num_batches = len(dataset["train"]) // args.batch_size
     results = []
     grouped = collections.defaultdict(list)
+    timestamp = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M")
     for completions, verification_info, prompts in tqdm(batch_iterator(args.batch_size, solution_strategy=args.solution_strategy, provider=args.provider, num_solutions=args.num_solutions), total=num_batches):
         # Evaluate the completions.
         rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
@@ -209,13 +210,11 @@ if __name__ == "__main__":
         # Combine rewards by prompt.
         for prompt, completion, reward in zip(prompts, completions, rewards):
             grouped[prompt].append({"completion": completion, "reward": reward})
-    
-    # Save results to JSON file
-    json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
-    timestamp = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M")
-    output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{timestamp}.json"
-    with open(output_path, "w") as f:
-        json.dump(json_data, f)
+        # Save results to JSON file
+        json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
+        output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{timestamp}.json"
+        with open(output_path, "w") as f:
+            json.dump(json_data, f)
 
     results = np.array(results)
     print(results.mean())
