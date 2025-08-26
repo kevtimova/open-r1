@@ -59,9 +59,8 @@ import argparse
 import time
 from datetime import datetime
 
-dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
-
-def batch_iterator(batch_size=10,
+def batch_iterator(dataset,
+                   batch_size=10,
                    use_type_1_tests=True,
                    use_type_2_tests=False,
                    solution_strategy='ground_truth',
@@ -71,9 +70,9 @@ def batch_iterator(batch_size=10,
     completions, verification_info, prompts = [], [], []
     total_batches = 0
 
-    for i in range(len(dataset["train"])):
+    for i in range(len(dataset)):
         # Obtain the training sample.
-        example = dataset["train"][i]
+        example = dataset[i]
         
         # Extract the prompt.
         prompt = example["messages"][0]["content"]
@@ -190,10 +189,17 @@ if __name__ == "__main__":
     # Arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch_size", type=int, default=10)
+    parser.add_argument("--start_index", type=int, default=0)
+    parser.add_argument("--end_index", type=int, default=1)
     parser.add_argument("--solution_strategy", type=str, default="latent_sketch")
     parser.add_argument("--num_solutions", type=int, default=4)
     parser.add_argument("--provider", type=str, default="digitalocean", choices=["openai", "digitalocean"])
     args = parser.parse_args()
+
+    # Dataset
+    dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
+    subset = [item for i, item in enumerate(dataset['train']) if i>=args.start_index and i < args.end_index]
+    print(f"Loaded {len(subset)} samples  indexed [{args.start_index}:{args.end_index}] from the full {len(dataset['train'])} dataset.")
 
     # Evaluation: Evaluate the MoT data.
     # TODO: Add batching.
@@ -202,7 +208,7 @@ if __name__ == "__main__":
     results = []
     grouped = collections.defaultdict(list)
     timestamp = datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d-%H-%M")
-    for completions, verification_info, prompts in tqdm(batch_iterator(args.batch_size, solution_strategy=args.solution_strategy, provider=args.provider, num_solutions=args.num_solutions), total=num_batches):
+    for completions, verification_info, prompts in tqdm(batch_iterator(subset, args.batch_size, solution_strategy=args.solution_strategy, provider=args.provider, num_solutions=args.num_solutions), total=num_batches):
         # Evaluate the completions.
         rewards = code_reward(completions, provider_type="morph", verification_info=verification_info)
         print(rewards)
@@ -212,7 +218,7 @@ if __name__ == "__main__":
             grouped[prompt].append({"completion": completion, "reward": reward})
         # Save results to JSON file
         json_data = [{"prompt": prompt, "completions": completions} for prompt, completions in grouped.items()]
-        output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{timestamp}.json"
+        output_path = f"logs/results_{args.solution_strategy}_{args.num_solutions}_{args.start_index}-{args.end_index}_{timestamp}.json"
         with open(output_path, "w") as f:
             json.dump(json_data, f)
 
