@@ -188,6 +188,7 @@ if __name__ == "__main__":
 
     # Arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument("--data_path", type=str, default=None, help="Path to the dataset. If not provided, will use the online version.")
     parser.add_argument("--batch_size", type=int, default=10)
     parser.add_argument("--start_index", type=int, default=0)
     parser.add_argument("--end_index", type=int, default=1)
@@ -197,9 +198,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Dataset
-    dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
+    if args.data_path:
+        dataset = datasets.load_from_disk(args.data_path)
+    else:
+        dataset = datasets.load_dataset("open-r1/Mixture-of-Thoughts", "code")
     subset = [item for i, item in enumerate(dataset['train']) if i>=args.start_index and i < args.end_index]
-    print(f"Loaded {len(subset)} samples  indexed [{args.start_index}:{args.end_index}] from the full {len(dataset['train'])} dataset.")
+    print(f"Loaded {len(subset)} samples indexed [{args.start_index}:{args.end_index}] from the full {len(dataset['train'])} dataset.")
 
     # Evaluation: Evaluate the MoT data.
     # TODO: Add batching.
