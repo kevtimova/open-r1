@@ -30,3 +30,12 @@ def extract_programming_language(prompt: str) -> str:
     elif "python" in match:
         return "python"
     raise ValueError(f"Programming language cpp or python not found in the prompt. {prompt}")
+
+def extract_code(completion: str, language: str | None = "python") -> str:
+    if language is None:
+        return ""
+    pattern = re.compile(rf"```{language}\n(.*?)```", re.DOTALL)
+    matches = pattern.findall(completion)
+    extracted_answer = matches[-1] if len(matches) >= 1 else ""
+    return extracted_answer
+
