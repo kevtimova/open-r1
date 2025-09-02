@@ -25,6 +25,7 @@ PER_REQUEST_TIMEOUT_S = 60.0  # per attempt
 
 def build_prompt(prompt: str, pick_strategy: str = "choose_best_fit"):
     techniques_list = ['DynamicProgramming', 'BruteForce', 'PrefixSum', 'Greedy', 'Hashing']
+    additional_techniques = ['Stack', 'MathematicalCalculation', 'Simulation', 'Math']
 
     if pick_strategy == "choose_best_fit":
         random_technique = random.choice(techniques_list)
@@ -60,6 +61,9 @@ Remember to specify the chosen technique for your solution in the format: <techn
 """
     elif pick_strategy == "choose_randomly_from_list":
         random_technique, chosen_technique = random.sample(techniques_list, 2)
+        # 50% of the time choose a technique from another list
+        if random.random() < 0.5:
+            chosen_technique = random.choice(additional_techniques)
         parts = re.findall(r'[A-Z](?:[a-z]+|[A-Z]*(?=[A-Z]|$))', random_technique)
         if len(parts) == 1:
             joined = random_technique.upper()
