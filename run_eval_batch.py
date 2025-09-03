@@ -113,7 +113,7 @@ async def call_once(client: AsyncOpenAI, messages, verification):
             resp = await client.chat.completions.create(
                 model=MODEL,
                 messages=messages,
-                temperature=0.2,
+                temperature=0.7,
                 timeout=PER_REQUEST_TIMEOUT_S,
             )
             completion = resp.choices[0].message.content
