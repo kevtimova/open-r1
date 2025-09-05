@@ -120,7 +120,7 @@ async def call_once(client: AsyncOpenAI, messages, verification):
             return completion, verification
         except (APIStatusError, APITimeoutError, APIConnectionError) as e:
             if attempt == MAX_RETRIES:
-                return f"[ERROR] {type(e).__name__}: {e}"
+                return f"[ERROR] {type(e).__name__}: {e}", verification
             # simple exponential backoff
             await asyncio.sleep(0.5 * (2 ** (attempt - 1)))
 
